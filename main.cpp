@@ -7,24 +7,30 @@
 
 int main(int argc, char** argv) {
 
-    int size = 10;
+    int sizex = 5;
+    int sizey = 5;
     int seed = 0;
-    int steps = 100;
-    int *data = new int[size * size];
+    int steps = 2;
+    int *data = new int[sizex * sizey];
 
     // random generate data
-    for (int i = 0; i < size * size; ++i ) {
-        data[i] = rand() % 2;
-    }
+    // for (int i = 0; i < size * size; ++i ) {
+    //     data[i] = rand() % 2;
+    // }
+    int *temp = new int[sizex * sizey] {0,1,0, 0, 1,0,0,1, 1, 0,1,1,1, 0 ,1, 1,0, 0, 0, 1,0,1,0,0,1};
 
-    Board board(size);
+    data = temp;
+
+    Board board(sizex, sizey);
 
     auto start_time = std::chrono::steady_clock::now();
-    board.init_board(data, size);
+    board.init_board(data, sizex, sizey);
 
     for (int timestamp = 0; timestamp < steps; ++timestamp ) {
-
+        board.update();
     }
+    std::cout << "Finished simulation" << std::endl;
+    board.print_board();
 
     auto end_time = std::chrono::steady_clock::now();
 

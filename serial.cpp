@@ -1,30 +1,33 @@
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
 class Board{
 public:
-    Board(int size);
-    void init_board(int *data, int size);
-    
-    private:
-    int timestamp;
-    const int size;
-    vector<vector<int>> grid;
+    Board(int sizex, int sizey);
+    void init_board(int *data, int sizex, int sizey);
     void update();
+    void print_board();
+private:
+    int timestamp;
+    const int sizex; // row
+    const int sizey; // col
+    vector<vector<int>> grid;
     int get_new_state(int i, int j);
 
 };
 
 
-Board::Board(int size): timestamp(0), size(size), grid(size, vector<int>(size)) {
+Board::Board(int sizex, int sizey): timestamp(0), sizex(sizex), sizey(sizey),
+                        grid(sizex, vector<int>(sizey)) {
 
 }
 
-void Board::init_board(int *data, int size){
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-            grid[i][j] = data[size*i+j];
+void Board::init_board(int *data, int sizex, int sizey){
+    for (int i = 0; i < sizex; ++i) {
+        for (int j = 0; j < sizey; ++j) {
+            grid[i][j] = data[sizey*i+j];
         }
     }
 }
@@ -37,16 +40,16 @@ void Board::update() {
 
     vector<vector<int>> newgrid = grid;
 
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < sizex; ++i) {
         int row_start = i - 1 >= 0 ? i - 1 : 0;
-        int row_end = i + 1 < size ? i + 1 : size - 1;
-        for (int j = 0; j < size; ++j) {
+        int row_end = i + 1 < sizex ? i + 1 : sizex - 1;
+        for (int j = 0; j < sizey; ++j) {
             int col_start = j - 1 >= 0 ? j - 1 : 0;
-            int col_end = j + 1 < size ? j + 1 : size - 1;
+            int col_end = j + 1 < sizey ? j + 1 : sizey - 1;
             int alive_neighbour = 0;
             //inlcude itself
-            for (int row = row_start; row < row_end; row++) {
-                for (int col = col_start; col < col_end; col++) {
+            for (int row = row_start; row <= row_end; row++) {
+                for (int col = col_start; col <= col_end; col++) {
                     alive_neighbour = alive_neighbour + grid[row][col];
                 }
             }
@@ -67,4 +70,14 @@ void Board::update() {
         } 
     }
     grid = newgrid;
+}
+
+void Board::print_board(){
+    for (int i = 0; i < sizex; ++i) {
+        for (int j = 0 ; j < sizey; ++j) {
+            cout << grid[i][j] << " ";
+        }
+        cout << endl;
+    }
+
 }
