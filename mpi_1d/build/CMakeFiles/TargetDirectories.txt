@@ -1,0 +1,3 @@
+/global/homes/j/josiath/final/parallel-game-of-life/mpi_1d/build/CMakeFiles/mpi1d.dir
+/global/homes/j/josiath/final/parallel-game-of-life/mpi_1d/build/CMakeFiles/edit_cache.dir
+/global/homes/j/josiath/final/parallel-game-of-life/mpi_1d/build/CMakeFiles/rebuild_cache.dir
