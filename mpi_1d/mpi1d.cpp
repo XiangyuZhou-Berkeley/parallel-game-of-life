@@ -139,6 +139,25 @@ void update(int rank){
             lower_ghost.push_back(temp_row);
         }
     }
+
+    //for confirm the accuracy of the code, get all ghost area
+    std::cout << "rank:" << rank << " upper_ghost:" <<std::endl;
+    for (int i = 0; i < upper_ghost.size(); i++) {
+        for (int j = 0; j < local_sizey; ++j){
+                std::cout << upper_ghost[i][j] << " "; 
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "rank:" << rank << " lower_ghost:" <<std::endl;
+     for (int i = 0; i < lower_ghost.size(); i++) {
+        for (int j = 0; j < local_sizey; ++j){
+                std::cout << lower_ghost[i][j] << " "; 
+        }
+        std::cout << std::endl;
+    }
+    
+
 }
 
 
