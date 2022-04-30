@@ -1,2 +1,2 @@
-# ./mpi_1d/build
-# ./serial/build
+./mpi_1d/build
+./serial/build
