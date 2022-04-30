@@ -180,12 +180,12 @@ void calculate_all(int rank) {
         int x_0 = min(t, upper_size);
         int x_1 = new_size - t;
         for (int i = x_0; i < x_1; ++i) {
-            int row_start = i - 1 >= x_0 ? i - 1 : x_0;
-            int row_end = i + 1 < x_1? i + 1 : x_1 - 1;
+            int row_start = i - 1 >= x_0 - 1 ? i - 1 : x_0 - 1;
+            int row_end = i + 1 < x_1 + 1? i + 1 : x_1 ;
             for (int j = 0 ; j < local_sizey; ++j) {
                 int col_start = j - 1 >= 0 ? j - 1 : 0;
                 int col_end = j + 1 < sizey ? j + 1 : sizey - 1;
-                 int alive_neighbour = 0;
+                 int alive_neighbour = 0; 
                 //inlcude itself
                 for (int row = row_start; row <= row_end; row++) {
                     for (int col = col_start; col <= col_end; col++) {
