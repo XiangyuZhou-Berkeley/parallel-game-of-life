@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     if (rank == num_procs - 1) {
         my_row = sizex - (num_procs - 1) * row_per_proc;
     }
-    initiate(rank, my_row, sizey, data + rank * row_per_proc * sizey , num_procs);
+    initiate(rank, my_row, sizey, data + rank * row_per_proc * sizey , num_procs,1);
     auto start_time = std::chrono::steady_clock::now();
 
 
@@ -68,9 +68,14 @@ int main(int argc, char** argv) {
             std::cout << std::endl;
         }
     }
-    std::chrono::duration<double> diff = end_time - start_time;
-    double seconds = diff.count();
-    std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
+
+
+    if (rank == 0){
+        std::chrono::duration<double> diff = end_time - start_time;
+        double seconds = diff.count();
+        std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
+    }
+    
 
     delete[] data;
     MPI_Finalize();
