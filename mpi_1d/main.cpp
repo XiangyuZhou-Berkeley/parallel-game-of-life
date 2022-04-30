@@ -39,7 +39,13 @@ int main(int argc, char** argv) {
     //broadcast data to every processor
     MPI_Bcast(data, sizex * sizey, MPI_INT, 0, MPI_COMM_WORLD);
     int row_per_proc = floor((sizex - 1) / num_procs) + 1;
-    initiate(rank, row_per_proc, sizey, data + rank * row_per_proc * sizey , num_procs);
+    //here think about the edge case like we have 5 rows, two processors, row_per_proc = 3, but processor 1 only have 2 rows
+    
+    int my_row = row_per_proc;
+    if (rank == num_procs - 1) {
+        my_row = sizex - (num_procs - 1) * row_per_proc;
+    }
+    initiate(rank, my_row, sizey, data + rank * row_per_proc * sizey , num_procs);
     auto start_time = std::chrono::steady_clock::now();
 
 
