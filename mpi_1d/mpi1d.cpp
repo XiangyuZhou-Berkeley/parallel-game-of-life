@@ -13,8 +13,7 @@ int total_rank = 0;
 
 int begin_x = 0;
 int end_x;
-vector<vector<int>> upper_ghost;
-vector<vector<int>> lower_ghost;
+
 
 //only save[0,local_sizex)
 vector<vector<int>> board;
@@ -27,7 +26,7 @@ void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency
     total_rank = ranks;
     update_frequency = frequency;
 
-    std::cout << "[Initiate]： rank " << rank << "local_sizex: " << local_sizex << std::endl;
+    // std::cout << "[Initiate]： rank " << rank << "local_sizex: " << local_sizex << std::endl;
    
 
     //put data into board
@@ -42,7 +41,7 @@ void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency
 }
 
 
-void calculate_all(int rank) {
+void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<vector<int>> &lower_ghost) {
     int upper_size = upper_ghost.size();
     int lower_size = lower_ghost.size();
     int new_size = upper_size + lower_size + local_sizex;
@@ -73,7 +72,10 @@ void calculate_all(int rank) {
 
         int x_0 = min(t, upper_size);
         int x_1 = new_size - t;
-        for (int i = 0; i < new_size; ++i) {
+        if (rank == total_rank - 1) {
+            x_1 = new_size;
+        }
+        for (int i = x_0; i < x_1; ++i) {
             int row_start = i - 1 >= 0 ? i - 1 :  0;
             int row_end = i + 1 < new_size? i + 1 : new_size - 1;
             for (int j = 0 ; j < local_sizey; ++j) {
@@ -134,12 +136,14 @@ void calculate_all(int rank) {
 }
 
 
-void update(int rank){
+void update(int rank, int step){
     /*send ghost area
     **recevie ghost area
     **decide which rows need to update and calculate 
     **calculate based on time
     */
+    vector<vector<int>> upper_ghost;
+    vector<vector<int>> lower_ghost;
     int num_transfer = update_frequency * local_sizey;
     int* s_upper_ghost = (int*) malloc((int)num_transfer  * sizeof(int));
     int* s_lower_ghost = (int*) malloc((int)num_transfer  * sizeof(int));
@@ -233,6 +237,24 @@ void update(int rank){
     }
 
     //for confirm the accuracy of the code, get all ghost area
+    // if (step == 1){
+    //     std::cout << "rank:" << rank << " upper_ghost:" <<std::endl;
+    //     for (int i = 0; i < upper_ghost.size(); i++) {
+    //         for (int j = 0; j < local_sizey; ++j){
+    //                 std::cout << upper_ghost[i][j] << " "; 
+    //         }
+    //         std::cout << std::endl;
+    //     }
+
+    //     std::cout << "rank:" << rank << " lower_ghost:" <<std::endl;
+    //     for (int i = 0; i < lower_ghost.size(); i++) {
+    //         for (int j = 0; j < local_sizey; ++j){
+    //                 std::cout << lower_ghost[i][j] << " "; 
+    //         }
+    //         std::cout << std::endl;
+    //     }
+
+    // }
     // std::cout << "rank:" << rank << " upper_ghost:" <<std::endl;
     // for (int i = 0; i < upper_ghost.size(); i++) {
     //     for (int j = 0; j < local_sizey; ++j){
@@ -247,9 +269,9 @@ void update(int rank){
     //             std::cout << lower_ghost[i][j] << " "; 
     //     }
     //     std::cout << std::endl;
-    //}
+    // }
     
-    calculate_all(rank);
+    calculate_all(rank, step, upper_ghost, lower_ghost);
 }
 
 
