@@ -1,2 +1,3 @@
 ./mpi_1d/build
 ./serial/build
+./mpi_2d/build
