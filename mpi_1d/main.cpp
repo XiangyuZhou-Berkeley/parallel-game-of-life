@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     int sizex = 7;
     int sizey = 5;
     int seed = 0;
-    int steps = 1;
+    int steps = 2;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];
     srand(seed);
@@ -55,20 +55,30 @@ int main(int argc, char** argv) {
     if (rank < residual) {
         my_row = my_row + 1;
     }
+    // int start_index = 0;
+    // if (rank < residual) {
+    //     start_index = rank * my_row * sizey;
+    // } else{
+    //     start_index = residual * (my_row+1) * sizey + (rank - residual + 1) * my_row * sizey;
+    // }
+
     int start_index = 0;
     if (rank < residual) {
-        start_index = rank * my_row * sizey;
-    } else{
-        start_index = residual * my_row * sizey + (rank - residual + 1) * my_row * sizey;
+        start_index = rank * (row_per_proc + 1) * sizey;
+    } else {
+        start_index = (residual * (row_per_proc + 1) + (rank - residual) * row_per_proc) * sizey;
     }
+    
+    
+
     int* displacement = new int[num_procs];
     int * recvcounts = new int[num_procs];
     for (int i = 0; i < num_procs; i++) {
         if (i < residual) {
-            displacement[i] = i * (row_per_proc + 1);
+            displacement[i] = i * (row_per_proc + 1) * sizey;
             recvcounts[i] = (row_per_proc + 1) * sizey;
         } else {
-            displacement[i] = residual * (row_per_proc + 1) + (i - residual) * row_per_proc;
+            displacement[i] = (residual * (row_per_proc + 1) + (i - residual) * row_per_proc) * sizey;
             recvcounts[i] = row_per_proc * sizey;
         }
         if (rank == 0) {
@@ -82,14 +92,14 @@ int main(int argc, char** argv) {
 
 
     for (int timestamp = 0; timestamp < steps; ++timestamp ) {
-        // board.update();
+        update(rank);
     }
     if (rank == 0){
         std::cout << "Finished simulation" << std::endl;
     }
     
     // board.print_board();
-    update(rank);
+    //update(rank);
 
     std::cout << "Rank " << rank << " finished update" << std::endl;
     gather(rank, sizex, sizey, data_temp, displacement, recvcounts);
