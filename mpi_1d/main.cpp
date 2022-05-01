@@ -12,10 +12,11 @@ int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int sizex = 7;
-    int sizey = 5;
-    int seed = 0;
-    int steps = 2;
+    int sizex = 1000;
+    int sizey = 1000;
+    int seed = 10;
+    int steps = 100;
+    int update_frequency = 1;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];
     srand(seed);
@@ -33,12 +34,14 @@ int main(int argc, char** argv) {
         // 0 0 0 0 1
         // int *temp = new int [sizex*sizey]{1,0,0,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1};
         // data = temp;
-        for (int i = 0; i < sizex; ++i) {
-            for (int j = 0; j < sizey; ++j){
-                std::cout << data[i * sizey + j] << " "; 
-            }
-            std::cout << std::endl;
-        }
+
+        //print input
+        // for (int i = 0; i < sizex; ++i) {
+        //     for (int j = 0; j < sizey; ++j){
+        //         std::cout << data[i * sizey + j] << " "; 
+        //     }
+        //     std::cout << std::endl;
+        // }
     }
 
     // int *temp = new int[sizex * sizey] {0,1,0, 0, 1,0,0,1, 1, 0,1,1,1, 0 ,1, 1,0, 0, 0, 1,0,1,0,0,1};
@@ -86,26 +89,25 @@ int main(int argc, char** argv) {
            // std::cout << recvcounts[i] <<std::endl;
         }
     }
-    
-    initiate(rank, my_row, sizey, data + start_index, num_procs,1);
     auto start_time = std::chrono::steady_clock::now();
+    initiate(rank, my_row, sizey, data + start_index, num_procs,update_frequency);
+    
 
 
     for (int timestamp = 0; timestamp < steps; ++timestamp ) {
-        update(rank);
-    }
-    if (rank == 0){
-        std::cout << "Finished simulation" << std::endl;
+        update(rank,timestamp);
     }
     
     // board.print_board();
     //update(rank);
 
-    std::cout << "Rank " << rank << " finished update" << std::endl;
+    // std::cout << "Rank " << rank << " finished update" << std::endl;
     gather(rank, sizex, sizey, data_temp, displacement, recvcounts);
 
     auto end_time = std::chrono::steady_clock::now();
-    
+    if (rank == 0){
+        std::cout << "Finished simulation" << std::endl;
+    }
     // if (rank == 0) {
     //      for (int i = 0; i < sizex; ++i) {
     //         for (int j = 0; j < sizey; ++j){
@@ -121,12 +123,13 @@ int main(int argc, char** argv) {
         double seconds = diff.count();
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
-        for (int i = 0; i < sizex; ++i) {
-            for (int j = 0; j < sizey; ++j){
-               std::cout << data_temp[i * sizey + j] << " "; 
-            }
-            std::cout << std::endl;
-        }
+        // print output
+        // for (int i = 0; i < sizex; ++i) {
+        //     for (int j = 0; j < sizey; ++j){
+        //        std::cout << data_temp[i * sizey + j] << " "; 
+        //     }
+        //     std::cout << std::endl;
+        // }
     }
     
 
