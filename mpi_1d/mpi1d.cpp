@@ -59,7 +59,18 @@ void calculate_all(int rank) {
         new_board[i+upper_size+board.size()] = lower_ghost[i];
     }
 
+    // std::cout << "before calculate all: rank " << rank << std::endl;
+
+    // for (int i = 0; i < new_size; ++i) {
+    //     for (int j = 0; j < local_sizey; ++j){
+    //         std::cout << new_board[i][j] << " "; 
+    //     }
+    //     std::cout << std::endl;
+    // }
+
     for (int t = 1 ; t <= update_frequency; ++t) {
+        vector<vector<int>> temp_new_board = new_board;
+
         int x_0 = min(t, upper_size);
         int x_1 = new_size - t;
         for (int i = 0; i < new_size; ++i) {
@@ -82,15 +93,26 @@ void calculate_all(int rank) {
                 if (new_board[i][j] == 1) {
                     if (alive_neighbour == 2 || alive_neighbour == 3){
                     } else {
-                        new_board[i][j] = 0;
+                        temp_new_board[i][j] = 0;
                     }
                 } else {
                     if (alive_neighbour == 3) {
-                        new_board[i][j] = 1;
+                        temp_new_board[i][j] = 1;
                     }
                 }
             } 
         }
+
+        // std::cout << "before calculate all: rank " << rank << std::endl;
+
+        // for (int i = 0; i < new_size; ++i) {
+        //     for (int j = 0; j < local_sizey; ++j){
+        //         std::cout << temp_new_board[i][j] << " "; 
+        //     }
+        //     std::cout << std::endl;
+        // } 
+
+        new_board = temp_new_board;
     }
 
     // copy back board values
@@ -100,14 +122,14 @@ void calculate_all(int rank) {
 
     }
 
-    std::cout << "after calculate all: rank " << rank << std::endl;
+    // std::cout << "after calculate all: rank " << rank << std::endl;
 
-    for (int i = 0; i < local_sizex; ++i) {
-        for (int j = 0; j < local_sizey; ++j){
-            std::cout << board[i][j] << " "; 
-        }
-        std::cout << std::endl;
-    }
+    // for (int i = 0; i < local_sizex; ++i) {
+    //     for (int j = 0; j < local_sizey; ++j){
+    //         std::cout << board[i][j] << " "; 
+    //     }
+    //     std::cout << std::endl;
+    // }
     
 }
 
