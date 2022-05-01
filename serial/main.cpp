@@ -8,25 +8,26 @@
 int main(int argc, char** argv) {
 
     
-    int sizex = 5;
+    int sizex = 7;
     int sizey = 5;
     int seed = 0;
     int steps = 2;
     int *data = new int[sizex * sizey];
-
+    srand(seed);
     // random generate data
-    // for (int i = 0; i < size * size; ++i ) {
-    //     data[i] = rand() % 2;
-    // }
-    int *temp = new int[sizex * sizey] {0,1,0, 0, 1,0,0,1, 1, 0,1,1,1, 0 ,1, 1,0, 0, 0, 1,0,1,0,0,1};
+    for (int i = 0; i < sizex * sizey; ++i ) {
+        data[i] = rand() % 2;
+    }
+    //int *temp = new int[sizex * sizey] {0,1,0, 0, 1,0,0,1, 1, 0,1,1,1, 0 ,1, 1,0, 0, 0, 1,0,1,0,0,1};
 
-    data = temp;
-
+    //data = temp;
+    
     Board board(sizex, sizey);
+    
 
     auto start_time = std::chrono::steady_clock::now();
     board.init_board(data, sizex, sizey);
-
+    board.print_board();
     for (int timestamp = 0; timestamp < steps; ++timestamp ) {
         board.update();
     }
