@@ -9,7 +9,8 @@ int local_sizey = 0;
 int final_sizex = 0;
 int update_frequency = 1;
 int total_rank = 0;
-
+int rank_per_row;
+int rank_per_col;
 
 int begin_x = 0;
 int end_x;
@@ -20,11 +21,13 @@ vector<vector<int>> board;
 
 
 
-void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency = 1){
+void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency = 1,int rank_row, int rank_col){
     local_sizey = sizey;
     local_sizex = sizex;
     total_rank = ranks;
     update_frequency = frequency;
+    rank_per_row = rank_row;
+    rank_per_col = rank_col;
 
     // std::cout << "[Initiate]： rank " << rank << "local_sizex: " << local_sizex << std::endl;
    
