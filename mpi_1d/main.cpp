@@ -15,9 +15,10 @@ int main(int argc, char** argv) {
     int sizex = 7;
     int sizey = 5;
     int seed = 0;
-    int steps = 2;
+    int steps = 1;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];
+    srand(seed);
     // random generate data
     if (rank == 0){
         for (int i = 0; i < sizex * sizey; ++i ) {
@@ -61,14 +62,18 @@ int main(int argc, char** argv) {
         start_index = residual * my_row * sizey + (rank - residual + 1) * my_row * sizey;
     }
     int* displacement = new int[num_procs];
+    int * recvcounts = new int[num_procs];
     for (int i = 0; i < num_procs; i++) {
         if (i < residual) {
             displacement[i] = i * (row_per_proc + 1);
+            recvcounts[i] = (row_per_proc + 1) * sizey;
         } else {
             displacement[i] = residual * (row_per_proc + 1) + (i - residual) * row_per_proc;
+            recvcounts[i] = row_per_proc * sizey;
         }
         if (rank == 0) {
-            std::cout << displacement[i] <<std::endl;
+            //std::cout << displacement[i] <<std::endl;
+           // std::cout << recvcounts[i] <<std::endl;
         }
     }
     
@@ -87,7 +92,7 @@ int main(int argc, char** argv) {
     update(rank);
 
     std::cout << "Rank " << rank << " finished update" << std::endl;
-    gather(rank, sizex, sizey, data_temp);
+    gather(rank, sizex, sizey, data_temp, displacement, recvcounts);
 
     auto end_time = std::chrono::steady_clock::now();
     
@@ -105,6 +110,13 @@ int main(int argc, char** argv) {
         std::chrono::duration<double> diff = end_time - start_time;
         double seconds = diff.count();
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
+
+        for (int i = 0; i < sizex; ++i) {
+            for (int j = 0; j < sizey; ++j){
+               std::cout << data_temp[i * sizey + j] << " "; 
+            }
+            std::cout << std::endl;
+        }
     }
     
 
