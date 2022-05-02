@@ -70,8 +70,8 @@ int main(int argc, char** argv) {
         } else {
             row_displacement[i] = row_residual * (row_per_proc + 1) + (i - row_residual) * row_per_proc;
         }
-        if (rank == 0) {
-        }
+        // if (rank == 0) {
+        // }
     }
 
     for (int i = 0; i < col_per_proc; i++) {
@@ -135,17 +135,11 @@ int main(int argc, char** argv) {
     // if (rank < proc_per_row * proc_per_col) {
         
     // }
+
+
+
+
     
-
-
-
-
-    // int start_index = 0;
-    // if (rank < residual) {
-    //     start_index = rank * (row_per_proc + 1) * sizey;
-    // } else {
-    //     start_index = (residual * (row_per_proc + 1) + (rank - residual) * row_per_proc) * sizey;
-    // }
     
     
 
@@ -161,9 +155,11 @@ int main(int argc, char** argv) {
     //     }
     //     if (rank == 0) {
     //     }
-    // }
-    // auto start_time = std::chrono::steady_clock::now();
-    // initiate(rank, my_row, sizey, data + start_index, num_procs,update_frequency);
+    }
+    if (rank < total_rank){
+        initiate(rank, my_row, my_col,reshaped_data[rank], num_procs,update_frequency);
+        auto start_time = std::chrono::steady_clock::now();
+    }
     
 
 
