@@ -42,20 +42,71 @@ void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency
 
 
 void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<vector<int>> &lower_ghost) {
-    int upper_size = upper_ghost.size();
-    int lower_size = lower_ghost.size();
-    int new_size = upper_size + lower_size + local_sizex;
+    int upper_x = upper_ghost.size();
+    int lower_x = lower_ghost.size();
+    int new_x = upper_x + local_sizex + lower_x;
+    int left_y = left_ghost.size() == 0 ? 0 : left_ghost[0].size();
+    int right_y = right_ghost.size() == 0 ? 0 : right_ghost[0].size();
+    int new_y = left_y + local_sizey + right_y;
 
-    vector<vector<int> > new_board (new_size, vector<int>(local_sizey, 0));
+    vector<vector<int> > new_board (new_x, vector<int>(new_y, 0));
 
-    for (int i = 0; i < upper_size; ++i) {
-        new_board[i] = upper_ghost[i];
+    for (int i = 0; i < upper_left_ghost.size(); ++i) {
+        for (int j = 0; j < upper_left_ghost[i].size(); ++j) {
+            new_board[i][j] = upper_left_ghost[i][j];
+        }
     }
-    for (int i = 0; i < board.size(); ++i) {
-        new_board[i+upper_size] = board[i];
+
+    for (int i = 0; i < upper_ghost.size(); ++i) {
+        for (int j = 0; j < upper_ghost[i].size(); ++j) {
+            new_board[i][j+left_y] = upper_ghost[i][j];
+        }
     }
-    for (int i = 0; i < lower_size; ++i) {
-        new_board[i+upper_size+board.size()] = lower_ghost[i];
+
+    // upper right
+    for (int i = 0; i < upper_right_ghost.size(); ++i ){
+        for (int j = 0; j < upper_right_ghost[i].size(); ++j) {
+            new_board[i][j+left_y+local_sizey] = upper_left_ghost[i][j];
+        }
+    }
+
+    // left 
+    for (int i = 0; i < left_ghost.size(); ++i) {
+        for (int j = 0; j < left_ghost[i].size(); ++j) {
+            new_board[i+upper_x][j] = left_ghost[i][j];
+        }
+    }
+
+    // middle
+    for (int i = 0; i < local_sizex; ++i) {
+        for (int j = 0; j < local_sizey; ++j) {
+            new_board[i+upper_x][j+left_y] = board[i][j];
+        }
+    }
+
+    // right
+    for(int i = 0; i < right_ghost.size(); ++i) {
+        for (int j = 0; j < right_ghost[i].size(); ++j) {
+            new_board[i+upper_x][j+left_y+local_sizey] = right_ghost[i][j];
+        }
+    }
+
+    for (int i = 0; i < lower_left_ghost.size(); ++i) {
+        for (int j = 0; j < lower_left_ghost[i].size(); ++j) {
+            new_board[i+upper_x+local_sizex][j] = lower_left_ghost[i][j];
+        }
+    }
+
+    for (int i = 0; i < lower_ghost.size(); ++i) {
+        for (int j = 0; j < lower_ghost[i].size(); ++j) {
+            new_board[i+upper_x+local_sizex][j+left_y] = lower_ghost[i][j];
+        }
+    }
+
+    for (int i = 0; i < lower_right_ghost.size(); ++i) {
+        for (int j = 0; j < lower_right_ghost[i].size(); ++j) {
+            new_board[i+upper_x+local_sizex][j+left_y+local_sizey] = lower_right_ghost[i][j];
+        }
     }
 
     // std::cout << "before calculate all: rank " << rank << std::endl;
@@ -70,15 +121,15 @@ void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<
     for (int t = 1 ; t <= update_frequency; ++t) {
         vector<vector<int>> temp_new_board = new_board;
 
-        int x_0 = min(t, upper_size);
-        int x_1 = new_size - t;
-        if (rank == total_rank - 1) {
-            x_1 = new_size;
-        }
+        int x_0 = min(t, upper_x);
+        int x_1 = new_x - min(t, lower_x);
+        int y_0 = min(t, left_y);
+        int y_1 = new_y - min(t, right_y);
+
         for (int i = x_0; i < x_1; ++i) {
             int row_start = i - 1 >= 0 ? i - 1 :  0;
             int row_end = i + 1 < new_size? i + 1 : new_size - 1;
-            for (int j = 0 ; j < local_sizey; ++j) {
+            for (int j = y_0 ; j < y_1; ++j) {
                 int col_start = j - 1 >= 0 ? j - 1 : 0;
                 int col_end = j + 1 < local_sizey ? j + 1 : local_sizey - 1;
                 int alive_neighbour = 0; 
@@ -118,10 +169,10 @@ void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<
     }
 
     // copy back board values
-    for (int i = 0; i < board.size(); ++i) {
-
-        board[i] = new_board[i+upper_size];
-
+    for (int i = 0; i < local_sizex; ++i) {
+        for (int j = 0; j < local_sizey; ++j) {
+            board[i][j] = new_board[i+upper_x][j+left_y];
+        }
     }
 
     // std::cout << "after calculate all: rank " << rank << std::endl;
@@ -144,6 +195,13 @@ void update(int rank, int step){
     */
     vector<vector<int>> upper_ghost;
     vector<vector<int>> lower_ghost;
+    vector<vector<int>> left_ghost;
+    vector<vector<int>> right_ghost;
+    vector<vector<int>> upper_left_ghost;
+    vector<vector<int>> upper_right_ghost;
+    vector<vector<int>> lower_left_ghost;
+    vector<vector<int>> lower_right_ghost;
+
     int num_transfer = update_frequency * local_sizey;
     int* s_upper_ghost = (int*) malloc((int)num_transfer  * sizeof(int));
     int* s_lower_ghost = (int*) malloc((int)num_transfer  * sizeof(int));

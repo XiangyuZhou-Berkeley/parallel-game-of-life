@@ -3,6 +3,8 @@
 #include <iostream>
 #include <mpi.h>
 #include <cmath>
+#include <random>
+
 #include "common.h"
 // #include "mpi1d.cpp"
 
@@ -12,18 +14,24 @@ int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int sizex = 1000;
-    int sizey = 1000;
+    int sizex = 10;
+    int sizey = 10;
     int seed = 10;
     int steps = 100;
     int update_frequency = 1;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];
-    srand(seed);
+    
+    // random generate data as 0 or 1
+    double p = 0.8; // the probability for generate as 1
+    std::mt19937 gen(seed);
+    std::discrete_distribution<> distrib({ 1-p, p });
+                                        // ^^^  ^- probability for 1
+                                        //  | probability for 0 
     // random generate data
     if (rank == 0){
         for (int i = 0; i < sizex * sizey; ++i ) {
-            data[i] = rand() % 2;
+            data[i] = distrib(gen);
         }
 
         //manual test case
@@ -36,12 +44,12 @@ int main(int argc, char** argv) {
         // data = temp;
 
         //print input
-        // for (int i = 0; i < sizex; ++i) {
-        //     for (int j = 0; j < sizey; ++j){
-        //         std::cout << data[i * sizey + j] << " "; 
-        //     }
-        //     std::cout << std::endl;
-        // }
+        for (int i = 0; i < sizex; ++i) {
+            for (int j = 0; j < sizey; ++j){
+                std::cout << data[i * sizey + j] << " "; 
+            }
+            std::cout << std::endl;
+        }
     }
 
     // int *temp = new int[sizex * sizey] {0,1,0, 0, 1,0,0,1, 1, 0,1,1,1, 0 ,1, 1,0, 0, 0, 1,0,1,0,0,1};
@@ -124,12 +132,12 @@ int main(int argc, char** argv) {
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
         // print output
-        // for (int i = 0; i < sizex; ++i) {
-        //     for (int j = 0; j < sizey; ++j){
-        //        std::cout << data_temp[i * sizey + j] << " "; 
-        //     }
-        //     std::cout << std::endl;
-        // }
+        for (int i = 0; i < sizex; ++i) {
+            for (int j = 0; j < sizey; ++j){
+               std::cout << data_temp[i * sizey + j] << " "; 
+            }
+            std::cout << std::endl;
+        }
     }
     
 
