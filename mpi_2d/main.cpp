@@ -4,12 +4,47 @@
 #include <mpi.h>
 #include <cmath>
 #include <vector>
+#include <cstring>
+
 #include "common.h"
 using namespace std;
-// #include "mpi1d.cpp"
+
+// Command Line Option Processing
+int find_arg_idx(int argc, char** argv, const char* option) {
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], option) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int find_int_arg(int argc, char** argv, const char* option, int default_value) {
+    int iplace = find_arg_idx(argc, argv, option);
+
+    if (iplace >= 0 && iplace < argc - 1) {
+        return std::stoi(argv[iplace + 1]);
+    }
+
+    return default_value;
+}
+
+char* find_string_option(int argc, char** argv, const char* option, char* default_value) {
+    int iplace = find_arg_idx(argc, argv, option);
+
+    if (iplace >= 0 && iplace < argc - 1) {
+        return argv[iplace + 1];
+    }
+
+    return default_value;
+}
+
 
 
 int main(int argc, char** argv) {
+    int steps = find_int_arg(argc, argv, "-t", 1000);
+
+
     int num_procs, rank;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
@@ -17,7 +52,7 @@ int main(int argc, char** argv) {
     int sizex = 10;
     int sizey = 10;
     int seed = 10;
-    int steps = 1;
+
     int update_frequency = 1;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];

@@ -4,8 +4,19 @@
 #include <random>
 #include <fstream>
 #include <string>
+#include <cstring>
 
 #include "serial.cpp"
+
+// Command Line Option Processing
+int find_arg_idx(int argc, char** argv, const char* option) {
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], option) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 
 int find_int_arg(int argc, char** argv, const char* option, int default_value) {
@@ -36,9 +47,9 @@ int main(int argc, char** argv) {
     int sizex = 10;
     int sizey = 10;
     int seed = 10;
-    int steps = 1;
+    int steps = find_int_arg(argc, argv, "-t", 1000);
 
-    char* filename = find_string_option(argc, argv, "-o", nullptr);
+    char* filename = find_string_option(argc, argv, "-i", nullptr);
 
     int *data = new int[sizex * sizey];
 
@@ -83,7 +94,6 @@ int main(int argc, char** argv) {
                         data[row * sizey + column] = 1;
                     } 
                 }
-
                 row = row + 1;
                 column = 0;
             }
@@ -103,10 +113,10 @@ int main(int argc, char** argv) {
         board.update();
     }
     
-    //board.print_board();
-
     auto end_time = std::chrono::steady_clock::now();
     std::cout << "Finished simulation" << std::endl;
+    std::cout << std::endl;
+    board.print_board();
     std::chrono::duration<double> diff = end_time - start_time;
     double seconds = diff.count();
     std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
