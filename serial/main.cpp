@@ -51,9 +51,10 @@ int main(int argc, char** argv) {
 
     char* filename = find_string_option(argc, argv, "-i", nullptr);
 
-    int *data = new int[sizex * sizey];
+    int *data;
 
     if (filename == nullptr) {
+        cout << "since no file found, we use random generate" << endl;
         srand(seed);
 
         // random generate data as 0 or 1
@@ -68,11 +69,25 @@ int main(int argc, char** argv) {
         }
     } else {
         // generate from file initialize
-        sizex = 300; // this is fixed
-        sizey = 300; // this is fixed
-
-        
-        // generate from file
+        // we need to change sizex, sizey according to the size of the file
+        sizex = 0;
+        sizey = 0; 
+        ifstream readfile_size(filename);
+        if ( readfile_size.is_open() ){
+            string fileline_size;  
+            while (getline(readfile_size,fileline_size))
+            {   
+                if (fileline_size.length() > sizey){
+                    sizey = fileline_size.length();
+                }
+                sizex = sizex + 1;
+            }
+        } else {
+            cout << "No such file to read size, try again." << endl;
+        }
+        sizex = (sizex / 100 + 1) * 100;
+        sizey = (sizey / 100 + 1) * 100;
+        data = new int[sizex * sizey];
         // first initialize to make usre every grid has a value
         for (int i = 0; i < sizex * sizey; ++i ) {
             data[i] = 0;
@@ -116,7 +131,7 @@ int main(int argc, char** argv) {
     auto end_time = std::chrono::steady_clock::now();
     std::cout << "Finished simulation" << std::endl;
     std::cout << std::endl;
-    board.print_board();
+    //board.print_board();
     std::chrono::duration<double> diff = end_time - start_time;
     double seconds = diff.count();
     std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
