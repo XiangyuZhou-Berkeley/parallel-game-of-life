@@ -44,7 +44,7 @@ void rearrange(vector<vector<int>> &after, int* before, int sizex, int sizey){
             for (int j = 0; j < sizey; j++) {
                 temp_list.push_back(before[temp_count++]);
             }
-            after.push_back(temp_list);
+            after[i] = temp_list;
         }
     }
 }
@@ -69,6 +69,7 @@ void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<
             new_board[i][j] = upper_left_ghost[i][j];
         }
     }
+    
 
     for (int i = 0; i < upper_ghost.size(); ++i) {
         for (int j = 0; j < upper_ghost[i].size(); ++j) {
@@ -79,10 +80,13 @@ void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<
     // upper right
     for (int i = 0; i < upper_right_ghost.size(); ++i ){
         for (int j = 0; j < upper_right_ghost[i].size(); ++j) {
-            new_board[i][j+left_y+local_sizey] = upper_left_ghost[i][j];
+            new_board[i][j+left_y+local_sizey] = upper_right_ghost[i][j];
         }
     }
 
+    
+    
+    
     // left 
     for (int i = 0; i < left_ghost.size(); ++i) {
         for (int j = 0; j < left_ghost[i].size(); ++j) {
@@ -500,23 +504,23 @@ void update(int rank, int step, int proc_per_row){
 
         //receive lower
         MPI_Recv(r_lower_ghost,num_send_row_ghost, MPI_INT, rank + proc_per_row, rank + proc_per_row, MPI_COMM_WORLD, &statuses[6]);
-        lower_ghost.resize(num_send_row_ghost);
+        lower_ghost.resize(num_send_row);
         if (proc_col == 0) {
 
             //receive right and lower_right
             MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
             MPI_Recv(r_lower_right_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row + 1, rank + proc_per_row + 1, MPI_COMM_WORLD, &statuses[7]);
 
-            right_ghost.resize(num_send_col_ghost);
-            lower_right_ghost.resize(num_send_corner_ghost);
+            right_ghost.resize(local_sizex);
+            lower_right_ghost.resize(update_frequency);
         } else if (proc_col == proc_per_row - 1) {
 
             //receive left and receive lower_left
             MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
             MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
 
-            left_ghost.resize(num_send_col_ghost);
-            lower_left_ghost.resize(num_send_corner_ghost);
+            left_ghost.resize(local_sizex);
+            lower_left_ghost.resize(update_frequency);
         } else {
 
             //receive right and lower_right  left and receive lower_left
@@ -525,17 +529,17 @@ void update(int rank, int step, int proc_per_row){
             MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
             MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
 
-            right_ghost.resize(num_send_col_ghost);
-            lower_right_ghost.resize(num_send_corner_ghost);
-            left_ghost.resize(num_send_col_ghost);
-            lower_left_ghost.resize(num_send_corner_ghost);
+            right_ghost.resize(local_sizex);
+            lower_right_ghost.resize(update_frequency);
+            left_ghost.resize(local_sizex);
+            lower_left_ghost.resize(update_frequency);
         }
     } else if (proc_row == proc_per_row - 1) {
 
         //receive upper
         MPI_Recv(r_upper_ghost,num_send_row_ghost, MPI_INT, rank - proc_per_row, rank - proc_per_row, MPI_COMM_WORLD, &statuses[1]);
 
-        upper_ghost.resize(num_send_row_ghost);
+        upper_ghost.resize(num_send_row);
         
         if (proc_col == 0) {
 
@@ -543,16 +547,16 @@ void update(int rank, int step, int proc_per_row){
             MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
             MPI_Recv(r_upper_right_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row + 1, rank - proc_per_row + 1, MPI_COMM_WORLD, &statuses[2]);
             
-            right_ghost.resize(num_send_col_ghost);
-            upper_right_ghost.resize(num_send_corner_ghost);
+            right_ghost.resize(local_sizex);
+            upper_right_ghost.resize(update_frequency);
         } else if (proc_col == proc_per_row - 1) {
 
             //receive left and receive upper_left
             MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
             MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
 
-            left_ghost.resize(num_send_col_ghost);
-            upper_left_ghost.resize(num_send_corner_ghost);
+            left_ghost.resize(local_sizex);
+            upper_left_ghost.resize(update_frequency);
         } else {
 
             //receive right and upper_right     left and receive upper_left
@@ -561,10 +565,10 @@ void update(int rank, int step, int proc_per_row){
             MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
             MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
 
-            right_ghost.resize(num_send_col_ghost);
-            upper_right_ghost.resize(num_send_corner_ghost);
-            left_ghost.resize(num_send_col_ghost);
-            upper_left_ghost.resize(num_send_corner_ghost);
+            right_ghost.resize(local_sizex);
+            upper_right_ghost.resize(update_frequency);
+            left_ghost.resize(local_sizex);
+            upper_left_ghost.resize(update_frequency);
         }
 
     } else {
@@ -573,8 +577,8 @@ void update(int rank, int step, int proc_per_row){
         MPI_Recv(r_upper_ghost,num_send_row_ghost, MPI_INT, rank - proc_per_row, rank - proc_per_row, MPI_COMM_WORLD, &statuses[1]);
         MPI_Recv(r_lower_ghost,num_send_row_ghost, MPI_INT, rank + proc_per_row, rank + proc_per_row, MPI_COMM_WORLD, &statuses[6]);
 
-        upper_ghost.resize(num_send_row_ghost);
-        lower_ghost.resize(num_send_row_ghost);
+        upper_ghost.resize(num_send_row);
+        lower_ghost.resize(num_send_row);
         
         if (proc_col == 0) {
             //recv right, upper_right, lower_right
@@ -582,9 +586,9 @@ void update(int rank, int step, int proc_per_row){
             MPI_Recv(r_upper_right_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row + 1, rank - proc_per_row + 1, MPI_COMM_WORLD, &statuses[2]);
             MPI_Recv(r_lower_right_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row + 1, rank + proc_per_row + 1, MPI_COMM_WORLD, &statuses[7]);
 
-            right_ghost.resize(num_send_col_ghost);
-            upper_right_ghost.resize(num_send_corner_ghost);
-            lower_right_ghost.resize(num_send_corner_ghost);
+            right_ghost.resize(local_sizex);
+            upper_right_ghost.resize(update_frequency);
+            lower_right_ghost.resize(update_frequency);
         } else if (proc_col == proc_per_row - 1) {
 
             //recv left, upper_left, lower_left
@@ -592,9 +596,9 @@ void update(int rank, int step, int proc_per_row){
             MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
             MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
 
-            left_ghost.resize(num_send_col_ghost);
-            upper_left_ghost.resize(num_send_corner_ghost);
-            lower_left_ghost.resize(num_send_corner_ghost);
+            left_ghost.resize(local_sizex);
+            upper_left_ghost.resize(update_frequency);
+            lower_left_ghost.resize(update_frequency);
         } else {
 
             //recv right, upper_right, lower_right  left, upper_left, lower_left
@@ -607,12 +611,12 @@ void update(int rank, int step, int proc_per_row){
             MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
             MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
 
-            right_ghost.resize(num_send_col_ghost);
-            upper_right_ghost.resize(num_send_corner_ghost);
-            lower_right_ghost.resize(num_send_corner_ghost);
-            left_ghost.resize(num_send_col_ghost);
-            upper_left_ghost.resize(num_send_corner_ghost);
-            lower_left_ghost.resize(num_send_corner_ghost);
+            right_ghost.resize(local_sizex);
+            upper_right_ghost.resize(update_frequency);
+            lower_right_ghost.resize(update_frequency);
+            left_ghost.resize(local_sizex);
+            upper_left_ghost.resize(update_frequency);
+            lower_left_ghost.resize(update_frequency);
         }
 
     }
