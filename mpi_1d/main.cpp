@@ -4,6 +4,7 @@
 #include <mpi.h>
 #include <cmath>
 #include <random>
+#include <cstring>
 
 #include "common.h"
 
