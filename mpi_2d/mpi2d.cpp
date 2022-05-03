@@ -49,12 +49,12 @@ void rearrange(vector<vector<int>> &after, int* before, int sizex, int sizey){
     }
 }
 
-void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<vector<int>> &lower_ghost,vector<vector<int>> left_ghost,
-    vector<vector<int>> right_ghost,
-    vector<vector<int>> upper_left_ghost,
-    vector<vector<int>> upper_right_ghost,
-    vector<vector<int>> lower_left_ghost,
-    vector<vector<int>> lower_right_ghost) {
+void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<vector<int>> &lower_ghost,vector<vector<int>> &left_ghost,
+    vector<vector<int>> &right_ghost,
+    vector<vector<int>> &upper_left_ghost,
+    vector<vector<int>> &upper_right_ghost,
+    vector<vector<int>> &lower_left_ghost,
+    vector<vector<int>> &lower_right_ghost) {
     int upper_x = upper_ghost.size();
     int lower_x = lower_ghost.size();
     int new_x = upper_x + local_sizex + lower_x;
