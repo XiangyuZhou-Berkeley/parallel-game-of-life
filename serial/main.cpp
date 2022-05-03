@@ -50,13 +50,15 @@ int main(int argc, char** argv) {
 
     char* filename = find_string_option(argc, argv, "-i", nullptr);
 
-    int *data = new int[sizex * sizey];
+    int *data;
 
     if (filename == nullptr) {
         srand(seed);
 
         sizex = find_int_arg(argc, argv, "-x", 10);
         sizey = find_int_arg(argc, argv, "-y", 10);
+
+        data = new int[sizex * sizey];
 
         // random generate data as 0 or 1
         double p = 0.8; // the probability for generate as 1
