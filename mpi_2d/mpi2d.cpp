@@ -36,12 +36,15 @@ void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency
 }
 
 void rearrange(vector<vector<int>> &after, int* before, int sizex, int sizey){
+    // cout << "vector size   " << after.size() << std::endl;
     if (after.size() != 0) {
         int temp_count = 0;
         for (int i = 0; i < sizex; i++) {
+            vector<int> temp_list;
             for (int j = 0; j < sizey; j++) {
-                after[i][j] = before[temp_count++];
+                temp_list.push_back(before[temp_count++]);
             }
+            after.push_back(temp_list);
         }
     }
 }
@@ -166,14 +169,6 @@ void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<
             } 
         }
 
-        // std::cout << "before calculate all: rank " << rank << std::endl;
-
-        // for (int i = 0; i < new_size; ++i) {
-        //     for (int j = 0; j < local_sizey; ++j){
-        //         std::cout << temp_new_board[i][j] << " "; 
-        //     }
-        //     std::cout << std::endl;
-        // } 
 
         new_board = temp_new_board;
     }
@@ -624,7 +619,12 @@ void update(int rank, int step, int proc_per_row){
 
     
 
-    
+    // if (rank == 0) {
+    //     for (int i = 0; i < local_sizey * update_frequency;i++) {
+    //        cout << r_lower_ghost[i] << " ";
+    //     }
+    //     cout << std::endl;
+    // }
     
     //put into grid
     rearrange(upper_left_ghost, r_upper_left_ghost, update_frequency, update_frequency);
@@ -636,7 +636,7 @@ void update(int rank, int step, int proc_per_row){
     rearrange(lower_ghost, r_lower_ghost, update_frequency, local_sizey);
     rearrange(lower_right_ghost, r_lower_right_ghost, update_frequency, update_frequency);
 
-
+    
     //for confirm the accuracy of the code, get all ghost area
     // if (step == 1){
     //     std::cout << "rank:" << rank << " upper_ghost:" <<std::endl;
@@ -674,7 +674,7 @@ void update(int rank, int step, int proc_per_row){
     
 
     //TODO:get back
-    // calculate_all(rank, step, upper_ghost, lower_ghost);
+    calculate_all(rank, step, upper_ghost, lower_ghost, left_ghost, right_ghost, upper_left_ghost, upper_right_ghost, lower_left_ghost, lower_right_ghost);
 }
 
 

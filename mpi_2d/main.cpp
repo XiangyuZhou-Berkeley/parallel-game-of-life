@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     int sizex = 10;
     int sizey = 10;
     int seed = 10;
-    int steps = 100;
+    int steps = 1;
     int update_frequency = 1;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];
