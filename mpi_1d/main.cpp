@@ -43,13 +43,13 @@ int main(int argc, char** argv) {
     int steps = find_int_arg(argc, argv, "-t", 1000);
     int seed = find_int_arg(argc, argv, "-t", 10);
     int update_frequency = find_int_arg(argc, argv, "-update", 1);
+    int sizex = find_int_arg(argc, argv, "-x", 10);
+    int sizey = find_int_arg(argc, argv, "-y", 10);
 
     int num_procs, rank;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int sizex = 10;
-    int sizey = 10;
 
 
     int *data = new int[sizex * sizey];

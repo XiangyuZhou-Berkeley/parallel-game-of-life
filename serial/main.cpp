@@ -43,11 +43,10 @@ char* find_string_option(int argc, char** argv, const char* option, char* defaul
 
 int main(int argc, char** argv) {
 
-    
+    int steps = find_int_arg(argc, argv, "-t", 1000);
+    int seed = find_int_arg(argc, argv, "-s", 10);
     int sizex = 10;
     int sizey = 10;
-    int seed = 10;
-    int steps = find_int_arg(argc, argv, "-t", 1000);
 
     char* filename = find_string_option(argc, argv, "-i", nullptr);
 
@@ -55,6 +54,9 @@ int main(int argc, char** argv) {
 
     if (filename == nullptr) {
         srand(seed);
+
+        sizex = find_int_arg(argc, argv, "-x", 10);
+        sizey = find_int_arg(argc, argv, "-y", 10);
 
         // random generate data as 0 or 1
         double p = 0.8; // the probability for generate as 1
