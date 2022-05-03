@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
     int update_frequency = 1;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];
+    int *final_output = new int[sizex * sizey];
     srand(seed);
     // random generate data
     if (rank == 0){
@@ -70,8 +71,8 @@ int main(int argc, char** argv) {
         } else {
             row_displacement[i] = row_residual * (row_per_proc + 1) + (i - row_residual) * row_per_proc;
         }
-        if (rank == 0) {
-        }
+        // if (rank == 0) {
+        // }
     }
 
     for (int i = 0; i < col_per_proc; i++) {
@@ -85,7 +86,12 @@ int main(int argc, char** argv) {
         // }
     }
 
+    //every vector is savxes 1d data for every processor
     vector<vector<int>> reshaped_data;
+    //recvcount and siplacement for gather
+    int * recvcounts = new int[total_rank];
+    int* displacement = new int[total_rank];
+
     for (int i = 0; i < total_rank; i++) {
         int rank_row_temp = i / proc_per_col;
         int rank_col_temp = i % proc_per_col;
@@ -107,6 +113,7 @@ int main(int argc, char** argv) {
             end_col = col_displacement[rank_col_temp + 1];
         }
         int size_temp = (end_row - start_row) * (end_col - start_col);
+        recvcounts[i] = size_temp;
         // if (rank == 0){
         //     std::cout<< i << " " << size_temp << std::endl;
         // }
@@ -120,8 +127,14 @@ int main(int argc, char** argv) {
         }
         reshaped_data.push_back(temp_rank_data);
     }
-
-    // for debug to test reshaped data
+    displacement[0] = 0;
+    for (int i = 1; i < total_rank; i++) {
+        displacement[i] = displacement[i - 1] + recvcounts[i - 1];
+        // if (rank == 0) {
+        //     cout<< i <<" number: " << recvcounts[i] << " displacement" << displacement[i] << endl;
+        // }
+    }
+    // debug to test reshaped data
     // if (rank == 0) {
     //     for (int i = 0; i < reshaped_data.size(); i++) {
     //         std::cout << "rank" << i << ":" << std::endl;
@@ -135,17 +148,11 @@ int main(int argc, char** argv) {
     // if (rank < proc_per_row * proc_per_col) {
         
     // }
+
+
+
+
     
-
-
-
-
-    // int start_index = 0;
-    // if (rank < residual) {
-    //     start_index = rank * (row_per_proc + 1) * sizey;
-    // } else {
-    //     start_index = (residual * (row_per_proc + 1) + (rank - residual) * row_per_proc) * sizey;
-    // }
     
     
 
@@ -162,10 +169,23 @@ int main(int argc, char** argv) {
     //     if (rank == 0) {
     //     }
     // }
-    auto start_time = std::chrono::steady_clock::now();
-    initiate(rank, my_row, sizey, data + start_index, num_procs,update_frequency);
-    
 
+    if (rank < total_rank){
+        initiate(rank, my_row, my_col,reshaped_data[rank].data(), total_rank,update_frequency);
+        gather(rank,data_temp,displacement,recvcounts);
+        auto start_time = std::chrono::steady_clock::now();
+    }
+    
+    //debug to make sure gather is right:
+    // if (rank == 0) {
+    //     std::cout << endl;
+    //     for (int i = 0; i < total_rank; i++) {
+    //         for (int j = 0; j < recvcounts[i]; j++) {
+    //             std::cout << data_temp[displacement[i] + j] <<" ";
+    //         }
+    //         std::cout << endl;
+    //     }
+    // }
 
     // for (int timestamp = 0; timestamp < steps; ++timestamp ) {
     //     update(rank,timestamp);
@@ -179,22 +199,58 @@ int main(int argc, char** argv) {
     // }
 
 
+    //reput data into 2d grid like
+    if(rank == 0){
+        for (int i = 0; i < total_rank; i++) {
+            int rank_row_temp = i / proc_per_col;
+            int rank_col_temp = i % proc_per_col;
+            
+            //[start_row,end_row)
+            int start_row = row_displacement[rank_row_temp];
+            int end_row;
+            int start_col = col_displacement[rank_col_temp];
+            int end_col;
+            if (rank_row_temp == proc_per_row - 1) {
+                end_row = sizex;
+            } else {
+                end_row = row_displacement[rank_row_temp + 1];
+            }
 
-    // if (rank == 0){
-    //     std::chrono::duration<double> diff = end_time - start_time;
-    //     double seconds = diff.count();
-    //     std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
+            if (rank_col_temp == proc_per_col - 1) {
+                end_col = sizey;
+            } else {
+                end_col = col_displacement[rank_col_temp + 1];
+            }
+            int temp_index = 0;
+            for (int r = start_row; r < end_row; r++) {
+                for (int c = start_col; c < end_col; c++) {
+                    final_output[r * sizey + c] = data_temp[displacement[i] + temp_index];
+                    temp_index++;
+                }
+            }
+        }
+    }
+
+
+
+    if (rank == 0){
+        // std::chrono::duration<double> diff = end_time - start_time;
+        // double seconds = diff.count();
+        // std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
         // print output
-        // for (int i = 0; i < sizex; ++i) {
-        //     for (int j = 0; j < sizey; ++j){
-        //        std::cout << data_temp[i * sizey + j] << " "; 
-        //     }
-        //     std::cout << std::endl;
-        // }
-    // }
+        std::cout << std::endl;
+        for (int i = 0; i < sizex; ++i) {
+            for (int j = 0; j < sizey; ++j){
+               std::cout << final_output[i * sizey + j] << " "; 
+            }
+            std::cout << std::endl;
+        }
+    }
     
 
     delete[] data;
+    delete[] data_temp;
+    delete[] final_output;
     MPI_Finalize();
 }

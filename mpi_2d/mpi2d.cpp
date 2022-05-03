@@ -36,7 +36,12 @@ void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency
 }
 
 
-void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<vector<int>> &lower_ghost) {
+void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<vector<int>> &lower_ghost,vector<vector<int>> left_ghost,
+    vector<vector<int>> right_ghost,
+    vector<vector<int>> upper_left_ghost,
+    vector<vector<int>> upper_right_ghost,
+    vector<vector<int>> lower_left_ghost,
+    vector<vector<int>> lower_right_ghost) {
     int upper_x = upper_ghost.size();
     int lower_x = lower_ghost.size();
     int new_x = upper_x + local_sizex + lower_x;
@@ -123,10 +128,10 @@ void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<
 
         for (int i = x_0; i < x_1; ++i) {
             int row_start = i - 1 >= 0 ? i - 1 :  0;
-            int row_end = i + 1 < new_size? i + 1 : new_size - 1;
+            int row_end = i + 1 < new_x? i + 1 : new_x - 1;
             for (int j = y_0 ; j < y_1; ++j) {
                 int col_start = j - 1 >= 0 ? j - 1 : 0;
-                int col_end = j + 1 < local_sizey ? j + 1 : local_sizey - 1;
+                int col_end = j + 1 < new_y ? j + 1 : new_y - 1;
                 int alive_neighbour = 0; 
                 //inlcude itself
                 for (int row = row_start; row <= row_end; row++) {
@@ -333,7 +338,9 @@ void update(int rank, int step, int proc_per_row){
     //     std::cout << std::endl;
     // }
     
-    calculate_all(rank, step, upper_ghost, lower_ghost);
+
+    //TODO:get back
+    // calculate_all(rank, step, upper_ghost, lower_ghost);
 }
 
 
@@ -341,11 +348,11 @@ void update(int rank, int step, int proc_per_row){
 
 
 
-void gather(int rank, int sizex, int sizey, int* data, int* disp, int* resvcounts){
+void gather(int rank, int* data, int* disp, int* resvcounts){
     int* recv_temp;
     int* send_data = new int[local_sizex * local_sizey];
     for (int i = 0; i < local_sizex; i++) {
-        for (int j = 0; j < sizey; j++) {
+        for (int j = 0; j < local_sizey; j++) {
             send_data[i * local_sizey + j] = board[i][j];
         }
     }
