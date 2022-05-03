@@ -218,14 +218,28 @@ void update(int rank, int step, int proc_per_row){
     int* s_right_ghost = (int*) malloc((int)num_transfer_col  * sizeof(int));
 
 
+    int* s_upper_left_ghost = (int*) malloc((int)num_transfer_corner * sizeof(int));
+    int* s_upper_right_ghost = (int*) malloc((int)num_transfer_corner  * sizeof(int));
+    int* s_lower_left_ghost = (int*) malloc((int)num_transfer_corner * sizeof(int));
+    int* s_lower_right_ghost = (int*) malloc((int)num_transfer_corner  * sizeof(int));
 
-    MPI_Request requests[2];
-    MPI_Status statuses[2];
+
+
+
+    MPI_Request requests[8]; 
+    // 0 1 2 
+    // 3   4
+    // 5 6 7  
+    MPI_Status statuses[8];
     int num_send_row = min(update_frequency, local_sizex);
+    int num_send_col = min(update_frequency, local_sizey);
+ 
     int num_received_upper_ghost = 0;
     int num_received_lower_ghost = 0;
-    int num_send_upper_ghost = num_send_row * local_sizey;
-    int num_send_lower_ghost = num_send_row * local_sizey;
+    int num_send_row_ghost = num_send_row * local_sizey;
+    int num_send_col_ghost = num_send_col * local_sizex;
+    int num_send_corner_ghost = update_frequency * update_frequency;
+
     //send ghost area
     
     //only s_lower_ghost
@@ -236,7 +250,8 @@ void update(int rank, int step, int proc_per_row){
                 s_lower_ghost[num_temp++] = board[i][j];
             }
         }
-    } else if (rank == total_rank - 1) {
+        MPI_Isend(s_lower_ghost, num_send_row_ghost, MPI_INT, rank+proc_per_row, rank, MPI_COMM_WORLD, &requests[6]);
+    } else if (proc_row == proc_per_row-1) {
         //only s_upper_ghost,possible here only a few
         int num_temp = 0;
         for (int i = 0; i < num_send_row; i++) {
@@ -244,6 +259,8 @@ void update(int rank, int step, int proc_per_row){
                 s_upper_ghost[num_temp++] = board[i][j];
             }
         }
+        // send upper ghost to rank (rank - proc_per_row)
+        MPI_Isend(s_upper_ghost, num_send_row_ghost, MPI_INT, rank-proc_per_row, rank, MPI_COMM_WORLD, &requests[1]);
     } else {
         //lower ghost
         int num_temp = 0;
@@ -260,11 +277,206 @@ void update(int rank, int step, int proc_per_row){
                 s_upper_ghost[num_temp++] = board[i][j];
             }
         }
+        MPI_Isend(s_upper_ghost, num_send_row_ghost, MPI_INT, rank-proc_per_row, rank, MPI_COMM_WORLD, &requests[1]);
+        MPI_Isend(s_lower_ghost, num_send_row_ghost, MPI_INT, rank+proc_per_row, rank, MPI_COMM_WORLD, &requests[6]);    
     }
 
+    /*
+    send left and right ghost 
+    */
     if (proc_col == 0) {
         // only send right
+        int num_temp = 0;
+        for (int i = 0; i < local_sizex; ++i ) {
+            for (int j = local_sizey - num_send_col; j < local_sizey; ++j) {
+                s_right_ghost[num_temp++] = board[i][j];
+            }
+        }
+        // send right ghost to proc ( rank + 1)
+        MPI_Isend(s_right_ghost, num_send_col_ghost, MPI_INT, rank+1, rank, MPI_COMM_WORLD, &requests[4]);    
+    } else if (proc_col == proc_per_row - 1) {
+        // only send left
+        int num_temp = 0;
+        for (int i = 0; i < local_sizex; ++i ) {
+            for (int j = 0; j < num_send_col; ++j) {
+                s_left_ghost[num_temp++] = board[i][j];
+            }
+        } 
+        // send left ghost to proc (rank - 1)
+        MPI_Isend(s_left_ghost, num_send_col_ghost, MPI_INT, rank-1, rank, MPI_COMM_WORLD, &requests[3]);  
+    } else {
+        // send right
+        int num_temp = 0;
+        for (int i = 0; i < local_sizex; ++i ) {
+            for (int j = local_sizey - num_send_col; j < local_sizey; ++j) {
+                s_right_ghost[num_temp++] = board[i][j];
+            }
+        }
+
+        num_temp = 0;
+        for (int i = 0; i < local_sizex; ++i ) {
+            for (int j = 0; j < num_send_col; ++j) {
+                s_left_ghost[num_temp++] = board[i][j];
+            }
+        } 
+        MPI_Isend(s_left_ghost, num_send_col_ghost, MPI_INT, rank-1, rank, MPI_COMM_WORLD, &requests[3]);  
+        MPI_Isend(s_right_ghost, num_send_col_ghost, MPI_INT, rank+1, rank, MPI_COMM_WORLD, &requests[4]);   
     }
+
+    /* 
+    send corners ghost
+    */
+    if (proc_col == 0 ){
+        if (proc_row == 0) {
+            // send lower right 
+            int num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_lower_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_lower_right_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row+1, rank, MPI_COMM_WORLD, &requests[7]);  
+        } else if (proc_row == proc_per_row - 1 ){
+            // send upper right
+            int num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_upper_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_upper_right_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row+1, rank, MPI_COMM_WORLD, &requests[2]);  
+        } else {
+            // send lower right and upper right
+            int num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_lower_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+            num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_upper_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_upper_right_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row+1, rank, MPI_COMM_WORLD, &requests[2]); 
+            MPI_Isend(s_lower_right_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row+1, rank, MPI_COMM_WORLD, &requests[7]);  
+        }
+    } else if (proc_col == proc_per_row - 1 ) {
+        if (proc_row == 0) {
+            // send lower left
+            int num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_lower_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_lower_left_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row-1, rank, MPI_COMM_WORLD, &requests[5]); 
+        } else if (proc_row == proc_per_row - 1 ){
+            // send upper left
+            int num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_upper_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_upper_left_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row-1, rank, MPI_COMM_WORLD, &requests[0]); 
+        } else {
+            // send lower left and upper left
+            int num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_lower_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+
+            num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_upper_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_upper_left_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row-1, rank, MPI_COMM_WORLD, &requests[0]); 
+            MPI_Isend(s_lower_left_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row-1, rank, MPI_COMM_WORLD, &requests[5]); 
+        } // else
+    } else {
+         if (proc_row == 0) {
+            // send lower left and lower right
+            int num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_lower_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+
+            num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_lower_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_lower_left_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row-1, rank, MPI_COMM_WORLD, &requests[5]); 
+            MPI_Isend(s_lower_right_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row+1, rank, MPI_COMM_WORLD, &requests[7]); 
+
+        } else if (proc_row == proc_per_row - 1 ){
+            // send upper left and upper right
+            int num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_upper_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+
+            num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_upper_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+            MPI_Isend(s_upper_left_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row-1, rank, MPI_COMM_WORLD, &requests[0]); 
+            MPI_Isend(s_upper_right_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row+1, rank, MPI_COMM_WORLD, &requests[2]); 
+
+        } else {
+            // send all
+            int num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_lower_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+
+            num_temp = 0;
+            for (int i = local_sizex - update_frequency; i < local_sizex; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_lower_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+
+            num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = 0; j < update_frequency; ++j) {
+                    s_upper_left_ghost[num_temp++] = board[i][j];
+                }
+            }
+
+            num_temp = 0;
+            for (int i = 0; i < update_frequency; ++i) {
+                for (int j = local_sizey - update_frequency; j < local_sizey; ++j) {
+                    s_upper_right_ghost[num_temp++] = board[i][j];
+                }
+            }
+
+            MPI_Isend(s_upper_left_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row-1, rank, MPI_COMM_WORLD, &requests[0]); 
+            MPI_Isend(s_upper_right_ghost, num_send_corner_ghost, MPI_INT, rank-proc_per_row+1, rank, MPI_COMM_WORLD, &requests[2]); 
+            MPI_Isend(s_lower_left_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row-1, rank, MPI_COMM_WORLD, &requests[5]); 
+            MPI_Isend(s_lower_right_ghost, num_send_corner_ghost, MPI_INT, rank+proc_per_row+1, rank, MPI_COMM_WORLD, &requests[7]); 
+
+        } // else 
+    }
+
+
+
+    if ()
     
     //send recv and put into grid
     if (rank > 0) {
