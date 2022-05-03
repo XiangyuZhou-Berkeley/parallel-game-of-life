@@ -1,1 +1,0 @@
-/opt/cray/pe/craype/2.7.10/bin/CC CMakeFiles/mpi1d.dir/main.cpp.o CMakeFiles/mpi1d.dir/mpi1d.cpp.o -o mpi1d 
