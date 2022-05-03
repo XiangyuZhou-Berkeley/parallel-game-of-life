@@ -8,63 +8,89 @@
 #include "serial.cpp"
 
 
+int find_int_arg(int argc, char** argv, const char* option, int default_value) {
+    int iplace = find_arg_idx(argc, argv, option);
+
+    if (iplace >= 0 && iplace < argc - 1) {
+        return std::stoi(argv[iplace + 1]);
+    }
+
+    return default_value;
+}
+
+char* find_string_option(int argc, char** argv, const char* option, char* default_value) {
+    int iplace = find_arg_idx(argc, argv, option);
+
+    if (iplace >= 0 && iplace < argc - 1) {
+        return argv[iplace + 1];
+    }
+
+    return default_value;
+}
+
+
+
 int main(int argc, char** argv) {
 
     
     int sizex = 10;
     int sizey = 10;
     int seed = 10;
-    int steps = 100;
+    int steps = 1;
 
-    // generate from file initialize
-    sizex = 300; // this is fixed
-    sizey = 300; // this is fixed
-    // // the following size is just for test, use test_jxy.txt instead:
-    // sizex = 10;
-    // sizey = 10;
+    char* filename = find_string_option(argc, argv, "-o", nullptr);
 
     int *data = new int[sizex * sizey];
 
-    // // random generate data as 0 or 1
-    // double p = 0.8; // the probability for generate as 1
-    // std::mt19937 gen(seed);
-    // std::discrete_distribution<> distrib({ 1-p, p });
-    //                                     // ^^^  ^- probability for 1
-    //                                     //  | probability for 0 
-    // for (int i = 0; i < sizex * sizey; ++i ) {
-    //     data[i] = distrib(gen);
-    // }
-    
-    
-    // generate from file
-    // first initialize to make usre every grid has a value
-    for (int i = 0; i < sizex * sizey; ++i ) {
-        data[i] = 0;
-    }
+    if (filename == nullptr) {
+        srand(seed);
 
-    string filename = "../../initialize_data/bhept1.txt";
-    ifstream readfile(filename);
-	if ( readfile.is_open() ){
-		string fileline;
-        int row = 0;
-        int column = 0;  
-        char item;
-		while (getline(readfile,fileline))
-		{
-		    for (int i = 0; i < fileline.length(); ++i){
-                item = fileline[i];
-                column = column + 1;
-                if (item == '*'){
-                    data[row * sizey + column] = 1;
-                } 
-            }
-
-            row = row + 1;
-            column = 0;
+        // random generate data as 0 or 1
+        double p = 0.8; // the probability for generate as 1
+        std::mt19937 gen(seed);
+        std::discrete_distribution<> distrib({ 1-p, p });
+                                            // ^^^  ^- probability for 1
+                                            //  | probability for 0 
+        for (int i = 0; i < sizex * sizey; ++i ) {
+            // data[i] = distrib(gen);
+            data[i] = rand() % 2;
         }
-	} else {
-	    cout << "No such file, try again." << endl;
-	}
+    } else {
+        // generate from file initialize
+        sizex = 300; // this is fixed
+        sizey = 300; // this is fixed
+
+        
+        // generate from file
+        // first initialize to make usre every grid has a value
+        for (int i = 0; i < sizex * sizey; ++i ) {
+            data[i] = 0;
+        }
+
+        //string filename = "../../initialize_data/bhept1.txt";
+        ifstream readfile(filename);
+        if ( readfile.is_open() ){
+            string fileline;
+            int row = 0;
+            int column = 0;  
+            char item;
+            while (getline(readfile,fileline))
+            {
+                for (int i = 0; i < fileline.length(); ++i){
+                    item = fileline[i];
+                    column = column + 1;
+                    if (item == '*'){
+                        data[row * sizey + column] = 1;
+                    } 
+                }
+
+                row = row + 1;
+                column = 0;
+            }
+        } else {
+            cout << "No such file, try again." << endl;
+        }
+    }
 
     
     Board board(sizex, sizey);

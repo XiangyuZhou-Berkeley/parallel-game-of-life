@@ -100,14 +100,9 @@ int main(int argc, char** argv) {
     auto start_time = std::chrono::steady_clock::now();
     initiate(rank, my_row, sizey, data + start_index, num_procs,update_frequency);
     
-
-
     for (int timestamp = 0; timestamp < steps; ++timestamp ) {
         update(rank,timestamp);
     }
-    
-    // board.print_board();
-    //update(rank);
 
     // std::cout << "Rank " << rank << " finished update" << std::endl;
     gather(rank, sizex, sizey, data_temp, displacement, recvcounts);
