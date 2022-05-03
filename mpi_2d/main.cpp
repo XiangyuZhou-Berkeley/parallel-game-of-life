@@ -228,6 +228,7 @@ int main(int argc, char** argv) {
 
 
     if (rank == 0){
+        auto end_time = std::chrono::steady_clock::now();
         std::chrono::duration<double> diff = end_time - start_time;
         double seconds = diff.count();
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
