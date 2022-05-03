@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 
     if (rank < total_rank){
         initiate(rank, my_row, my_col,reshaped_data[rank].data(), total_rank,update_frequency);
-        for (int i = 0; i < steps; i++) {
+        for (int i = 0; i < steps; i += update_frequency) {
             update(rank, i, proc_per_row);
         }
         gather(rank,data_temp,displacement,recvcounts);

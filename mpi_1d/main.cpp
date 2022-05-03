@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
 
 
     int *data = new int[sizex * sizey];
+    int *data_temp = new int[sizex * sizey];
     
     // random generate data as 0 or 1
     double p = 0.8; // the probability for generate as 1
@@ -133,12 +134,12 @@ int main(int argc, char** argv) {
     auto start_time = std::chrono::steady_clock::now();
     initiate(rank, my_row, sizey, data + start_index, num_procs,update_frequency);
     
-    for (int timestamp = 0; timestamp < steps; ++timestamp ) {
+    for (int timestamp = 0; timestamp < steps; timestamp += update_frequency ) {
         update(rank,timestamp);
     }
 
     // std::cout << "Rank " << rank << " finished update" << std::endl;
-    gather(rank, sizex, sizey, data, displacement, recvcounts);
+    gather(rank, sizex, sizey, data_temp, displacement, recvcounts);
 
     auto end_time = std::chrono::steady_clock::now();
     if (rank == 0){
@@ -162,7 +163,7 @@ int main(int argc, char** argv) {
         // print output
         for (int i = 0; i < sizex; ++i) {
             for (int j = 0; j < sizey; ++j){
-               std::cout << data[i * sizey + j] << " "; 
+               std::cout << data_temp[i * sizey + j] << " "; 
             }
             std::cout << std::endl;
         }
@@ -170,5 +171,6 @@ int main(int argc, char** argv) {
     
 
     delete[] data;
+    delete[] data_temp;
     MPI_Finalize();
 }
