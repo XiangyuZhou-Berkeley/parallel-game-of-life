@@ -44,7 +44,7 @@ char* find_string_option(int argc, char** argv, const char* option, char* defaul
 int main(int argc, char** argv) {
     int steps = find_int_arg(argc, argv, "-t", 1000);
     int update_frequency = find_int_arg(argc, argv, "-update", 1);
-    int seed = find_int_arg(argc, argv, "-t", 10);
+    int seed = find_int_arg(argc, argv, "-s", 10);
 
     int sizex = find_int_arg(argc, argv, "-x", 10);
     int sizey = find_int_arg(argc, argv, "-y", 10);
