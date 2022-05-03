@@ -2,6 +2,8 @@
 #include <chrono>
 #include <iostream>
 #include <random>
+#include <fstream>
+#include <string>
 
 #include "serial.cpp"
 
@@ -13,20 +15,57 @@ int main(int argc, char** argv) {
     int sizey = 10;
     int seed = 10;
     int steps = 100;
+
+    // generate from file initialize
+    sizex = 300; // this is fixed
+    sizey = 300; // this is fixed
+    // // the following size is just for test, use test_jxy.txt instead:
+    // sizex = 10;
+    // sizey = 10;
+
     int *data = new int[sizex * sizey];
 
-    // random generate data as 0 or 1
-    double p = 0.8; // the probability for generate as 1
-    std::mt19937 gen(seed);
-    std::discrete_distribution<> distrib({ 1-p, p });
-                                        // ^^^  ^- probability for 1
-                                        //  | probability for 0 
+    // // random generate data as 0 or 1
+    // double p = 0.8; // the probability for generate as 1
+    // std::mt19937 gen(seed);
+    // std::discrete_distribution<> distrib({ 1-p, p });
+    //                                     // ^^^  ^- probability for 1
+    //                                     //  | probability for 0 
+    // for (int i = 0; i < sizex * sizey; ++i ) {
+    //     data[i] = distrib(gen);
+    // }
+    
+    
+    // generate from file
+    // first initialize to make usre every grid has a value
     for (int i = 0; i < sizex * sizey; ++i ) {
-        data[i] = distrib(gen);
+        data[i] = 0;
     }
-    //int *temp = new int[sizex * sizey] {0,1,0, 0, 1,0,0,1, 1, 0,1,1,1, 0 ,1, 1,0, 0, 0, 1,0,1,0,0,1};
 
-    //data = temp;
+    string filename = "../../initialize_data/bhept1.txt";
+    ifstream readfile(filename);
+	if ( readfile.is_open() ){
+		string fileline;
+        int row = 0;
+        int column = 0;  
+        char item;
+		while (getline(readfile,fileline))
+		{
+		    for (int i = 0; i < fileline.length(); ++i){
+                item = fileline[i];
+                column = column + 1;
+                if (item == '*'){
+                    data[row * sizey + column] = 1;
+                } 
+            }
+
+            row = row + 1;
+            column = 0;
+        }
+	} else {
+	    cout << "No such file, try again." << endl;
+	}
+
     
     Board board(sizex, sizey);
     
@@ -38,7 +77,7 @@ int main(int argc, char** argv) {
         board.update();
     }
     
-    board.print_board();
+    //board.print_board();
 
     auto end_time = std::chrono::steady_clock::now();
     std::cout << "Finished simulation" << std::endl;
