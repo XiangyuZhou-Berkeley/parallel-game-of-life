@@ -134,6 +134,7 @@ int main(int argc, char** argv) {
         //     cout<< i <<" number: " << recvcounts[i] << " displacement" << displacement[i] << endl;
         // }
     }
+    
     // debug to test reshaped data
     // if (rank == 0) {
     //     for (int i = 0; i < reshaped_data.size(); i++) {
@@ -172,6 +173,9 @@ int main(int argc, char** argv) {
 
     if (rank < total_rank){
         initiate(rank, my_row, my_col,reshaped_data[rank].data(), total_rank,update_frequency);
+        for (int i = 0; i < steps; i++) {
+            update(rank, i, proc_per_row);
+        }
         gather(rank,data_temp,displacement,recvcounts);
         auto start_time = std::chrono::steady_clock::now();
     }

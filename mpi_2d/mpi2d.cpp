@@ -35,6 +35,16 @@ void initiate(int rank, int sizex,int sizey, int* data, int ranks, int frequency
 
 }
 
+void rearrange(vector<vector<int>> &after, int* before, int sizex, int sizey){
+    if (after.size() != 0) {
+        int temp_count = 0;
+        for (int i = 0; i < sizex; i++) {
+            for (int j = 0; j < sizey; j++) {
+                after[i][j] = before[temp_count++];
+            }
+        }
+    }
+}
 
 void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<vector<int>> &lower_ghost,vector<vector<int>> left_ghost,
     vector<vector<int>> right_ghost,
@@ -209,19 +219,28 @@ void update(int rank, int step, int proc_per_row){
     int num_transfer_row = update_frequency * local_sizey;
     int num_transfer_corner = update_frequency * update_frequency;
     int num_transfer_col = update_frequency * local_sizey;
+
     int* s_upper_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
     int* s_lower_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
     int* r_upper_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
     int* r_lower_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
 
+
     int* s_left_ghost = (int*) malloc((int)num_transfer_col  * sizeof(int));
     int* s_right_ghost = (int*) malloc((int)num_transfer_col  * sizeof(int));
-
+    int* r_left_ghost = (int*) malloc((int)num_transfer_col  * sizeof(int));
+    int* r_right_ghost = (int*) malloc((int)num_transfer_col  * sizeof(int));
 
     int* s_upper_left_ghost = (int*) malloc((int)num_transfer_corner * sizeof(int));
     int* s_upper_right_ghost = (int*) malloc((int)num_transfer_corner  * sizeof(int));
     int* s_lower_left_ghost = (int*) malloc((int)num_transfer_corner * sizeof(int));
     int* s_lower_right_ghost = (int*) malloc((int)num_transfer_corner  * sizeof(int));
+    int* r_upper_left_ghost = (int*) malloc((int)num_transfer_corner * sizeof(int));
+    int* r_upper_right_ghost = (int*) malloc((int)num_transfer_corner  * sizeof(int));
+    int* r_lower_left_ghost = (int*) malloc((int)num_transfer_corner * sizeof(int));
+    int* r_lower_right_ghost = (int*) malloc((int)num_transfer_corner  * sizeof(int));
+
+
 
 
 
@@ -234,8 +253,10 @@ void update(int rank, int step, int proc_per_row){
     int num_send_row = min(update_frequency, local_sizex);
     int num_send_col = min(update_frequency, local_sizey);
  
-    int num_received_upper_ghost = 0;
-    int num_received_lower_ghost = 0;
+    int num_received_row_ghost = 0;
+    int num_received_col_ghost = 0;
+    int num_received_corner_ghost = 0;
+
     int num_send_row_ghost = num_send_row * local_sizey;
     int num_send_col_ghost = num_send_col * local_sizex;
     int num_send_corner_ghost = update_frequency * update_frequency;
@@ -474,46 +495,147 @@ void update(int rank, int step, int proc_per_row){
         } // else 
     }
 
+    /* receive begin
+       0 1 2
+       3   4
+       5 6 7
+    */
 
+    if (proc_row == 0) {
 
-    if ()
+        //receive lower
+        MPI_Recv(r_lower_ghost,num_send_row_ghost, MPI_INT, rank + proc_per_row, rank + proc_per_row, MPI_COMM_WORLD, &statuses[6]);
+        lower_ghost.resize(num_send_row_ghost);
+        if (proc_col == 0) {
+
+            //receive right and lower_right
+            MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
+            MPI_Recv(r_lower_right_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row + 1, rank + proc_per_row + 1, MPI_COMM_WORLD, &statuses[7]);
+
+            right_ghost.resize(num_send_col_ghost);
+            lower_right_ghost.resize(num_send_corner_ghost);
+        } else if (proc_col == proc_per_row - 1) {
+
+            //receive left and receive lower_left
+            MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
+            MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
+
+            left_ghost.resize(num_send_col_ghost);
+            lower_left_ghost.resize(num_send_corner_ghost);
+        } else {
+
+            //receive right and lower_right  left and receive lower_left
+            MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
+            MPI_Recv(r_lower_right_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row + 1, rank + proc_per_row + 1, MPI_COMM_WORLD, &statuses[7]);
+            MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
+            MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
+
+            right_ghost.resize(num_send_col_ghost);
+            lower_right_ghost.resize(num_send_corner_ghost);
+            left_ghost.resize(num_send_col_ghost);
+            lower_left_ghost.resize(num_send_corner_ghost);
+        }
+    } else if (proc_row == proc_per_row - 1) {
+
+        //receive upper
+        MPI_Recv(r_upper_ghost,num_send_row_ghost, MPI_INT, rank - proc_per_row, rank - proc_per_row, MPI_COMM_WORLD, &statuses[1]);
+
+        upper_ghost.resize(num_send_row_ghost);
+        
+        if (proc_col == 0) {
+
+            //receive right and upper_right
+            MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
+            MPI_Recv(r_upper_right_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row + 1, rank - proc_per_row + 1, MPI_COMM_WORLD, &statuses[2]);
+            
+            right_ghost.resize(num_send_col_ghost);
+            upper_right_ghost.resize(num_send_corner_ghost);
+        } else if (proc_col == proc_per_row - 1) {
+
+            //receive left and receive upper_left
+            MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
+            MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
+
+            left_ghost.resize(num_send_col_ghost);
+            upper_left_ghost.resize(num_send_corner_ghost);
+        } else {
+
+            //receive right and upper_right     left and receive upper_left
+            MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
+            MPI_Recv(r_upper_right_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row + 1, rank - proc_per_row + 1, MPI_COMM_WORLD, &statuses[2]);
+            MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
+            MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
+
+            right_ghost.resize(num_send_col_ghost);
+            upper_right_ghost.resize(num_send_corner_ghost);
+            left_ghost.resize(num_send_col_ghost);
+            upper_left_ghost.resize(num_send_corner_ghost);
+        }
+
+    } else {
+
+        //recv upper    lower
+        MPI_Recv(r_upper_ghost,num_send_row_ghost, MPI_INT, rank - proc_per_row, rank - proc_per_row, MPI_COMM_WORLD, &statuses[1]);
+        MPI_Recv(r_lower_ghost,num_send_row_ghost, MPI_INT, rank + proc_per_row, rank + proc_per_row, MPI_COMM_WORLD, &statuses[6]);
+
+        upper_ghost.resize(num_send_row_ghost);
+        lower_ghost.resize(num_send_row_ghost);
+        
+        if (proc_col == 0) {
+            //recv right, upper_right, lower_right
+            MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
+            MPI_Recv(r_upper_right_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row + 1, rank - proc_per_row + 1, MPI_COMM_WORLD, &statuses[2]);
+            MPI_Recv(r_lower_right_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row + 1, rank + proc_per_row + 1, MPI_COMM_WORLD, &statuses[7]);
+
+            right_ghost.resize(num_send_col_ghost);
+            upper_right_ghost.resize(num_send_corner_ghost);
+            lower_right_ghost.resize(num_send_corner_ghost);
+        } else if (proc_col == proc_per_row - 1) {
+
+            //recv left, upper_left, lower_left
+            MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
+            MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
+            MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
+
+            left_ghost.resize(num_send_col_ghost);
+            upper_left_ghost.resize(num_send_corner_ghost);
+            lower_left_ghost.resize(num_send_corner_ghost);
+        } else {
+
+            //recv right, upper_right, lower_right  left, upper_left, lower_left
+
+            MPI_Recv(r_right_ghost,num_send_col_ghost, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD, &statuses[4]);
+            MPI_Recv(r_upper_right_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row + 1, rank - proc_per_row + 1, MPI_COMM_WORLD, &statuses[2]);
+            MPI_Recv(r_lower_right_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row + 1, rank + proc_per_row + 1, MPI_COMM_WORLD, &statuses[7]);
+
+            MPI_Recv(r_left_ghost,num_send_col_ghost, MPI_INT, rank - 1, rank - 1, MPI_COMM_WORLD, &statuses[3]);
+            MPI_Recv(r_upper_left_ghost,num_send_corner_ghost, MPI_INT, rank - proc_per_row - 1, rank - proc_per_row - 1, MPI_COMM_WORLD, &statuses[0]);
+            MPI_Recv(r_lower_left_ghost,num_send_corner_ghost, MPI_INT, rank + proc_per_row - 1, rank + proc_per_row - 1, MPI_COMM_WORLD, &statuses[5]);
+
+            right_ghost.resize(num_send_col_ghost);
+            upper_right_ghost.resize(num_send_corner_ghost);
+            lower_right_ghost.resize(num_send_corner_ghost);
+            left_ghost.resize(num_send_col_ghost);
+            upper_left_ghost.resize(num_send_corner_ghost);
+            lower_left_ghost.resize(num_send_corner_ghost);
+        }
+
+    }
+
     
-    //send recv and put into grid
-    if (rank > 0) {
-        MPI_Isend(s_upper_ghost, num_send_upper_ghost, MPI_INT, rank-1, rank, MPI_COMM_WORLD, &requests[0]);
-        // receive upper ghost from previous
-        MPI_Probe(rank-1 , rank - 1 , MPI_COMM_WORLD , &statuses[0]);
-        MPI_Get_count(&statuses[0], MPI_INT, &num_received_upper_ghost);
-        MPI_Recv(r_upper_ghost,num_received_upper_ghost, MPI_INT, rank-1, rank-1, MPI_COMM_WORLD, &statuses[0]);
-        //put in first receive_row
-        int receive_row = num_received_upper_ghost / local_sizey;
-        int num_temp = 0;
-        for (int i = 0; i < receive_row; i++) {
-            vector<int> temp_row(local_sizey, 0);
-            for (int j = 0; j < local_sizey; j++) {
-                temp_row[j] = r_upper_ghost[i * local_sizey + j];
-            }
-            upper_ghost.push_back(temp_row);
-        }
-    }
 
-    if (rank < total_rank - 1){
-        MPI_Isend(s_lower_ghost, num_send_lower_ghost, MPI_INT, rank+1, rank, MPI_COMM_WORLD, &requests[1]);
-        // receive lower ghost from followgin processor
-        MPI_Probe(rank+1 , rank+1 , MPI_COMM_WORLD , &statuses[1]);
-        MPI_Get_count(&statuses[1], MPI_INT, &num_received_lower_ghost);
-        MPI_Recv(r_lower_ghost, num_received_lower_ghost, MPI_INT, rank+1, rank+1, MPI_COMM_WORLD, &statuses[1]);
-        int receive_row = num_received_lower_ghost / local_sizey;
-        int num_temp = 0;
-        //put in last receive_row 
-        for (int i = 0; i < receive_row; i++) {
-            vector<int> temp_row(local_sizey, 0);
-            for (int j = 0; j < local_sizey; j++) {
-                temp_row[j] = r_lower_ghost[i * local_sizey + j];
-            }
-            lower_ghost.push_back(temp_row);
-        }
-    }
+    
+    
+    //put into grid
+    rearrange(upper_left_ghost, r_upper_left_ghost, update_frequency, update_frequency);
+    rearrange(upper_ghost, r_upper_ghost, update_frequency, local_sizey);
+    rearrange(upper_right_ghost, r_upper_right_ghost, update_frequency, update_frequency);
+    rearrange(left_ghost, r_left_ghost, local_sizex, update_frequency);
+    rearrange(right_ghost, r_right_ghost, local_sizex, update_frequency);
+    rearrange(lower_left_ghost, r_lower_left_ghost, update_frequency, update_frequency);
+    rearrange(lower_ghost, r_lower_ghost, update_frequency, local_sizey);
+    rearrange(lower_right_ghost, r_lower_right_ghost, update_frequency, update_frequency);
+
 
     //for confirm the accuracy of the code, get all ghost area
     // if (step == 1){
