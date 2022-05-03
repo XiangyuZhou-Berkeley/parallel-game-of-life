@@ -182,9 +182,8 @@ int main(int argc, char** argv) {
     //     }
     // }
 
-    if (rank == 0) {
-        auto start_time = std::chrono::steady_clock::now();
-    }
+    auto start_time = std::chrono::steady_clock::now();
+   
 
     if (rank < total_rank){
         initiate(rank, my_row, my_col,reshaped_data[rank].data(), total_rank,update_frequency);
