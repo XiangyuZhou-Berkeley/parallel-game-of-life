@@ -182,30 +182,9 @@ int main(int argc, char** argv) {
     //     }
     // }
 
-    // if (rank < proc_per_row * proc_per_col) {
-        
-    // }
-
-
-
-
-    
-    
-    
-
-    // int* displacement = new int[num_procs];
-    // int * recvcounts = new int[num_procs];
-    // for (int i = 0; i < num_procs; i++) {
-    //     if (i < residual) {
-    //         displacement[i] = i * (row_per_proc + 1) * sizey;
-    //         recvcounts[i] = (row_per_proc + 1) * sizey;
-    //     } else {
-    //         displacement[i] = (residual * (row_per_proc + 1) + (i - residual) * row_per_proc) * sizey;
-    //         recvcounts[i] = row_per_proc * sizey;
-    //     }
-    //     if (rank == 0) {
-    //     }
-    // }
+    if (rank == 0) {
+        auto start_time = std::chrono::steady_clock::now();
+    }
 
     if (rank < total_rank){
         initiate(rank, my_row, my_col,reshaped_data[rank].data(), total_rank,update_frequency);
@@ -213,31 +192,7 @@ int main(int argc, char** argv) {
             update(rank, i, proc_per_row);
         }
         gather(rank,data_temp,displacement,recvcounts);
-        auto start_time = std::chrono::steady_clock::now();
     }
-    
-    //debug to make sure gather is right:
-    // if (rank == 0) {
-    //     std::cout << endl;
-    //     for (int i = 0; i < total_rank; i++) {
-    //         for (int j = 0; j < recvcounts[i]; j++) {
-    //             std::cout << data_temp[displacement[i] + j] <<" ";
-    //         }
-    //         std::cout << endl;
-    //     }
-    // }
-
-    // for (int timestamp = 0; timestamp < steps; ++timestamp ) {
-    //     update(rank,timestamp);
-    // }
-    
-    // gather(rank, sizex, sizey, data_temp, displacement, recvcounts);
-
-    // auto end_time = std::chrono::steady_clock::now();
-    // if (rank == 0){
-    //     std::cout << "Finished simulation" << std::endl;
-    // }
-
 
     //reput data into 2d grid like
     if(rank == 0){
@@ -274,9 +229,9 @@ int main(int argc, char** argv) {
 
 
     if (rank == 0){
-        // std::chrono::duration<double> diff = end_time - start_time;
-        // double seconds = diff.count();
-        // std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
+        std::chrono::duration<double> diff = end_time - start_time;
+        double seconds = diff.count();
+        std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
         // print output
         std::cout << std::endl;
