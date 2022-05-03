@@ -162,8 +162,8 @@ int main(int argc, char** argv) {
     //     if (rank == 0) {
     //     }
     // }
-    // auto start_time = std::chrono::steady_clock::now();
-    // initiate(rank, my_row, sizey, data + start_index, num_procs,update_frequency);
+    auto start_time = std::chrono::steady_clock::now();
+    initiate(rank, my_row, sizey, data + start_index, num_procs,update_frequency);
     
 
 

@@ -10,11 +10,6 @@ int final_sizex = 0;
 int update_frequency = 1;
 int total_rank = 0;
 
-
-int begin_x = 0;
-int end_x;
-
-
 //only save[0,local_sizex)
 vector<vector<int>> board;
 
@@ -187,12 +182,16 @@ void calculate_all(int rank, int step, vector<vector<int>> &upper_ghost, vector<
 }
 
 
-void update(int rank, int step){
+void update(int rank, int step, int proc_per_row){
     /*send ghost area
     **recevie ghost area
     **decide which rows need to update and calculate 
     **calculate based on time
     */
+    int proc_row = rank / proc_per_row;
+    int proc_col = rank % proc_per_row;
+
+
     vector<vector<int>> upper_ghost;
     vector<vector<int>> lower_ghost;
     vector<vector<int>> left_ghost;
@@ -202,11 +201,16 @@ void update(int rank, int step){
     vector<vector<int>> lower_left_ghost;
     vector<vector<int>> lower_right_ghost;
 
-    int num_transfer = update_frequency * local_sizey;
-    int* s_upper_ghost = (int*) malloc((int)num_transfer  * sizeof(int));
-    int* s_lower_ghost = (int*) malloc((int)num_transfer  * sizeof(int));
-    int* r_upper_ghost = (int*) malloc((int)num_transfer  * sizeof(int));
-    int* r_lower_ghost = (int*) malloc((int)num_transfer  * sizeof(int));
+    int num_transfer_row = update_frequency * local_sizey;
+    int num_transfer_corner = update_frequency * update_frequency;
+    int num_transfer_col = update_frequency * local_sizey;
+    int* s_upper_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
+    int* s_lower_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
+    int* r_upper_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
+    int* r_lower_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
+
+    int* s_left_ghost = (int*) malloc((int)num_transfer_col  * sizeof(int));
+    int* s_right_ghost = (int*) malloc((int)num_transfer_col  * sizeof(int));
 
 
 
@@ -220,16 +224,14 @@ void update(int rank, int step){
     //send ghost area
     
     //only s_lower_ghost
-    if (rank == 0) {
+    if (proc_row == 0) {
         int num_temp = 0;
         for (int i = local_sizex - num_send_row; i < local_sizex; i++) {
             for (int j = 0; j < local_sizey; j++) {
                 s_lower_ghost[num_temp++] = board[i][j];
             }
         }
-    }
-
-    if (rank == total_rank - 1) {
+    } else if (rank == total_rank - 1) {
         //only s_upper_ghost,possible here only a few
         int num_temp = 0;
         for (int i = 0; i < num_send_row; i++) {
@@ -237,9 +239,7 @@ void update(int rank, int step){
                 s_upper_ghost[num_temp++] = board[i][j];
             }
         }
-    } 
-
-    if (rank > 0 && rank < total_rank - 1) {
+    } else {
         //lower ghost
         int num_temp = 0;
         for (int i = local_sizex - num_send_row; i < local_sizex; i++) {
@@ -255,6 +255,10 @@ void update(int rank, int step){
                 s_upper_ghost[num_temp++] = board[i][j];
             }
         }
+    }
+
+    if (proc_col == 0) {
+        // only send right
     }
     
     //send recv and put into grid
