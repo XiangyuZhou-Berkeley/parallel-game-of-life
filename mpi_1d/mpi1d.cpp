@@ -10,11 +10,6 @@ int final_sizex = 0;
 int update_frequency = 1;
 int total_rank = 0;
 
-
-int begin_x = 0;
-int end_x;
-
-
 //only save[0,local_sizex)
 vector<vector<int>> board;
 

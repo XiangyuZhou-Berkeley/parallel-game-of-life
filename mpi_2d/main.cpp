@@ -43,6 +43,7 @@ char* find_string_option(int argc, char** argv, const char* option, char* defaul
 
 int main(int argc, char** argv) {
     int steps = find_int_arg(argc, argv, "-t", 1000);
+    int update_frequency = find_int_arg(argc, argv, "-update", 1);
 
 
     int num_procs, rank;
@@ -53,7 +54,6 @@ int main(int argc, char** argv) {
     int sizey = 10;
     int seed = 10;
 
-    int update_frequency = 1;
     int *data = new int[sizex * sizey];
     int *data_temp = new int[sizex * sizey];
     int *final_output = new int[sizex * sizey];

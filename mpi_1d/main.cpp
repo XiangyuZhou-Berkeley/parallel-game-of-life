@@ -6,32 +6,66 @@
 #include <random>
 
 #include "common.h"
-// #include "mpi1d.cpp"
+
+
+// Command Line Option Processing
+int find_arg_idx(int argc, char** argv, const char* option) {
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], option) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int find_int_arg(int argc, char** argv, const char* option, int default_value) {
+    int iplace = find_arg_idx(argc, argv, option);
+
+    if (iplace >= 0 && iplace < argc - 1) {
+        return std::stoi(argv[iplace + 1]);
+    }
+
+    return default_value;
+}
+
+char* find_string_option(int argc, char** argv, const char* option, char* default_value) {
+    int iplace = find_arg_idx(argc, argv, option);
+
+    if (iplace >= 0 && iplace < argc - 1) {
+        return argv[iplace + 1];
+    }
+
+    return default_value;
+}
 
 
 int main(int argc, char** argv) {
+    int steps = find_int_arg(argc, argv, "-t", 1000);
+    int seed = find_int_arg(argc, argv, "-t", 10);
+    int update_frequency = find_int_arg(argc, argv, "-update", 1);
+
     int num_procs, rank;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     int sizex = 10;
     int sizey = 10;
-    int seed = 10;
-    int steps = 100;
-    int update_frequency = 1;
+
+
     int *data = new int[sizex * sizey];
-    int *data_temp = new int[sizex * sizey];
     
     // random generate data as 0 or 1
     double p = 0.8; // the probability for generate as 1
     std::mt19937 gen(seed);
+    srand(seed);
     std::discrete_distribution<> distrib({ 1-p, p });
                                         // ^^^  ^- probability for 1
                                         //  | probability for 0 
     // random generate data
     if (rank == 0){
         for (int i = 0; i < sizex * sizey; ++i ) {
-            data[i] = distrib(gen);
+            // data[i] = distrib(gen);
+            data[i] = rand() % 2;
         }
 
         //manual test case
@@ -80,7 +114,6 @@ int main(int argc, char** argv) {
         start_index = (residual * (row_per_proc + 1) + (rank - residual) * row_per_proc) * sizey;
     }
     
-    
 
     int* displacement = new int[num_procs];
     int * recvcounts = new int[num_procs];
@@ -105,7 +138,7 @@ int main(int argc, char** argv) {
     }
 
     // std::cout << "Rank " << rank << " finished update" << std::endl;
-    gather(rank, sizex, sizey, data_temp, displacement, recvcounts);
+    gather(rank, sizex, sizey, data, displacement, recvcounts);
 
     auto end_time = std::chrono::steady_clock::now();
     if (rank == 0){
@@ -129,7 +162,7 @@ int main(int argc, char** argv) {
         // print output
         for (int i = 0; i < sizex; ++i) {
             for (int j = 0; j < sizey; ++j){
-               std::cout << data_temp[i * sizey + j] << " "; 
+               std::cout << data[i * sizey + j] << " "; 
             }
             std::cout << std::endl;
         }
