@@ -5,9 +5,13 @@
 #include <cmath>
 #include <random>
 #include <cstring>
+#include <fstream>
+#include <string>
+
 
 #include "common.h"
 
+using namespace std;
 
 // Command Line Option Processing
 int find_arg_idx(int argc, char** argv, const char* option) {
@@ -44,47 +48,114 @@ int main(int argc, char** argv) {
     int steps = find_int_arg(argc, argv, "-t", 1000);
     int seed = find_int_arg(argc, argv, "-s", 10);
     int update_frequency = find_int_arg(argc, argv, "-update", 1);
-    int sizex = find_int_arg(argc, argv, "-x", 10);
-    int sizey = find_int_arg(argc, argv, "-y", 10);
+    char* filename = find_string_option(argc, argv, "-i", nullptr);
+    int sizex = 10;
+    int sizey = 10;
 
     int num_procs, rank;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-
-    int *data = new int[sizex * sizey];
-    int *data_temp = new int[sizex * sizey];
+    int *data;
+    int *data_temp;
     
-    // random generate data as 0 or 1
-    double p = 0.8; // the probability for generate as 1
-    std::mt19937 gen(seed);
-    srand(seed);
-    std::discrete_distribution<> distrib({ 1-p, p });
-                                        // ^^^  ^- probability for 1
-                                        //  | probability for 0 
-    // random generate data
-    if (rank == 0){
-        for (int i = 0; i < sizex * sizey; ++i ) {
-            // data[i] = distrib(gen);
-            data[i] = rand() % 2;
-        }
+    if (filename == nullptr) {
+        cout << "since no file found, we use random generate" << endl;
+        // random generate data as 0 or 1
+        srand(seed);
+        sizex = find_int_arg(argc, argv, "-x", 10);
+        sizey = find_int_arg(argc, argv, "-y", 10);
+        data = new int[sizex * sizey];
+        data_temp = new int[sizex * sizey];
 
-        //manual test case
-        // 1 0 0 1 0 
-        // 0 0 0 0 0 
-        // 1 1 1 1 0 
-        // 0 0 0 0 0 
-        // 0 0 0 0 1
-        // int *temp = new int [sizex*sizey]{1,0,0,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1};
-        // data = temp;
-
-        //print input
-        for (int i = 0; i < sizex; ++i) {
-            for (int j = 0; j < sizey; ++j){
-                std::cout << data[i * sizey + j] << " "; 
+        double p = 0.8; // the probability for generate as 1
+        std::mt19937 gen(seed);
+        std::discrete_distribution<> distrib({ 1-p, p });
+                                            // ^^^  ^- probability for 1
+                                            //  | probability for 0 
+        // random generate data
+        if (rank == 0){
+            for (int i = 0; i < sizex * sizey; ++i ) {
+                // data[i] = distrib(gen);
+                data[i] = rand() % 2;
             }
-            std::cout << std::endl;
+
+            //manual test case
+            // 1 0 0 1 0 
+            // 0 0 0 0 0 
+            // 1 1 1 1 0 
+            // 0 0 0 0 0 
+            // 0 0 0 0 1
+            // int *temp = new int [sizex*sizey]{1,0,0,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1};
+            // data = temp;
+
+            //print input
+            for (int i = 0; i < sizex; ++i) {
+                for (int j = 0; j < sizey; ++j){
+                    std::cout << data[i * sizey + j] << " "; 
+                }
+                std::cout << std::endl;
+            }
+        }
+    } else {
+        // generate from file initialize
+        // we need to change sizex, sizey according to the size of the file
+        sizex = 0;
+        sizey = 0; 
+        ifstream readfile_size(filename);
+        if ( readfile_size.is_open() ){
+            string fileline_size;  
+            while (getline(readfile_size,fileline_size))
+            {   
+                if (fileline_size.length() > sizey){
+                    sizey = fileline_size.length();
+                }
+                sizex = sizex + 1;
+            }
+        } else {
+            cout << "No such file to read size, try again." << endl;
+        }
+        sizex = (sizex / 100 + 1) * 100;
+        sizey = (sizey / 100 + 1) * 100;
+        data = new int[sizex * sizey];
+        data_temp = new int[sizex * sizey];
+        if (rank == 0){
+            // first initialize to make usre every grid has a value
+            for (int i = 0; i < sizex * sizey; ++i ) {
+                data[i] = 0;
+            }
+
+            //string filename = "../../initialize_data/bhept1.txt";
+            ifstream readfile(filename);
+            if ( readfile.is_open() ){
+                string fileline;
+                int row = 0;
+                int column = 0;  
+                char item;
+                while (getline(readfile,fileline))
+                {
+                    for (int i = 0; i < fileline.length(); ++i){
+                        item = fileline[i];
+                        column = column + 1;
+                        if (item == '*'){
+                            data[row * sizey + column] = 1;
+                        } 
+                    }
+                    row = row + 1;
+                    column = 0;
+                }
+
+                //print input
+                for (int i = 0; i < sizex; ++i) {
+                    for (int j = 0; j < sizey; ++j){
+                        std::cout << data[i * sizey + j] << " "; 
+                    }
+                    std::cout << std::endl;
+                }
+            } else {
+                cout << "No such file, try again." << endl;
+            }
         }
     }
 
@@ -161,13 +232,13 @@ int main(int argc, char** argv) {
         double seconds = diff.count();
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
-        // print output
-        for (int i = 0; i < sizex; ++i) {
-            for (int j = 0; j < sizey; ++j){
-               std::cout << data_temp[i * sizey + j] << " "; 
-            }
-            std::cout << std::endl;
-        }
+        // // print output
+        // for (int i = 0; i < sizex; ++i) {
+        //     for (int j = 0; j < sizey; ++j){
+        //        std::cout << data_temp[i * sizey + j] << " "; 
+        //     }
+        //     std::cout << std::endl;
+        // }
     }
     
 
