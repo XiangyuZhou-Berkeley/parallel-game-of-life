@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -80,4 +81,13 @@ void Board::print_board(){
         cout << endl;
     }
 
+}
+
+void Board::output_to_file(std::ofstream& out) {
+    for (int i = 0; i < sizex; ++i) {
+        for (int j = 0; j < sizey; ++j) {
+            out << grid[i * sizey + j] << " ";
+        }
+        out << std::endl;
+    }
 }

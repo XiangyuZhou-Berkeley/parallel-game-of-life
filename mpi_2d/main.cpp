@@ -39,6 +39,15 @@ char* find_string_option(int argc, char** argv, const char* option, char* defaul
     return default_value;
 }
 
+void output_to_file(std::ofstream& out, int *data, int sizex, int sizey) {
+    for (int i = 0; i < sizex; ++i) {
+        for (int j = 0; j < sizey; ++j) {
+            out << data[i * sizey + j] << " ";
+        }
+        out << std::endl;
+    }
+}
+
 
 
 int main(int argc, char** argv) {

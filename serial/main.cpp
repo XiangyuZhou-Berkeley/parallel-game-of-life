@@ -40,15 +40,14 @@ char* find_string_option(int argc, char** argv, const char* option, char* defaul
 }
 
 
-
 int main(int argc, char** argv) {
-
     int steps = find_int_arg(argc, argv, "-t", 1000);
     int seed = find_int_arg(argc, argv, "-s", 10);
     int sizex = 10;
     int sizey = 10;
 
     char* filename = find_string_option(argc, argv, "-i", nullptr);
+    char* outputfile = find_string_option(argc, argv, "-o", nullptr);
 
     int *data;
 
@@ -134,8 +133,11 @@ int main(int argc, char** argv) {
     
     auto end_time = std::chrono::steady_clock::now();
     std::cout << "Finished simulation" << std::endl;
-    std::cout << std::endl;
-    //board.print_board();
+
+    if (outputfile != nullptr) {
+        std::ofstream out(outputfile);
+        board.output_to_file(out);
+    }
     std::chrono::duration<double> diff = end_time - start_time;
     double seconds = diff.count();
     std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
