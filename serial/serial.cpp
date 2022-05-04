@@ -87,7 +87,7 @@ void Board::print_board(){
 void Board::output_to_file(std::ofstream& out) {
     for (int i = 0; i < sizex; ++i) {
         for (int j = 0; j < sizey; ++j) {
-            out << grid[i * sizey + j] << " ";
+            out << grid[i][j] << " ";
         }
         out << std::endl;
     }
