@@ -10,6 +10,7 @@ public:
     void init_board(int *data, int sizex, int sizey);
     void update();
     void print_board();
+    void output_to_file(std::ofstream& out);
 private:
     int timestamp;
     const int sizex; // row
