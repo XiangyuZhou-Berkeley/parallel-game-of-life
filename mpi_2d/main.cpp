@@ -58,6 +58,8 @@ int main(int argc, char** argv) {
     int update_frequency = find_int_arg(argc, argv, "-update", 1);
     int seed = find_int_arg(argc, argv, "-s", 10);
     char* filename = find_string_option(argc, argv, "-i", nullptr);
+    char* outputfile = find_string_option(argc, argv, "-o", nullptr);
+    
     int sizex = 10;
     int sizey = 10;
 
@@ -321,13 +323,10 @@ int main(int argc, char** argv) {
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
         // // print output
-        // std::cout << std::endl;
-        // for (int i = 0; i < sizex; ++i) {
-        //     for (int j = 0; j < sizey; ++j){
-        //        std::cout << final_output[i * sizey + j] << " "; 
-        //     }
-        //     std::cout << std::endl;
-        // }
+        if (outputfile != nullptr) {
+            std::ofstream out(outputfile);
+            output_to_file(out, final_output, sizex, sizey);
+        }
     }
     
 
