@@ -204,7 +204,7 @@ void update(int rank, int step, int proc_per_row){
     */
     int proc_row = rank / proc_per_row;
     int proc_col = rank % proc_per_row;
-
+    
 
     vector<vector<int>> upper_ghost;
     vector<vector<int>> lower_ghost;
@@ -217,7 +217,7 @@ void update(int rank, int step, int proc_per_row){
 
     int num_transfer_row = update_frequency * local_sizey;
     int num_transfer_corner = update_frequency * update_frequency;
-    int num_transfer_col = update_frequency * local_sizey;
+    int num_transfer_col = update_frequency * local_sizex;
 
     int* s_upper_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));
     int* s_lower_ghost = (int*) malloc((int)num_transfer_row  * sizeof(int));

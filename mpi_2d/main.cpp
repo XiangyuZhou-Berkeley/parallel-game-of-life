@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     int *final_output;
 
     if (filename == nullptr) {
-        cout << "since no file found, we use random generate" << endl;
+        // cout << "since no file found, we use random generate" << endl;
         // random generate data as 0 or 1
         srand(seed);
         sizex = find_int_arg(argc, argv, "-x", 10);
@@ -94,12 +94,12 @@ int main(int argc, char** argv) {
             }
 
             //  print input
-            for (int i = 0; i < sizex; ++i) {
-                for (int j = 0; j < sizey; ++j){
-                    std::cout << data[i * sizey + j] << " "; 
-                }
-                std::cout << std::endl;
-            }
+            // for (int i = 0; i < sizex; ++i) {
+            //     for (int j = 0; j < sizey; ++j){
+            //         std::cout << data[i * sizey + j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
         }
     } else {
         // generate from file initialize
@@ -151,12 +151,12 @@ int main(int argc, char** argv) {
                 }
 
                 //print input
-                for (int i = 0; i < sizex; ++i) {
-                    for (int j = 0; j < sizey; ++j){
-                        std::cout << data[i * sizey + j] << " "; 
-                    }
-                    std::cout << std::endl;
-                }
+                // for (int i = 0; i < sizex; ++i) {
+                //     for (int j = 0; j < sizey; ++j){
+                //         std::cout << data[i * sizey + j] << " "; 
+                //     }
+                //     std::cout << std::endl;
+                // }
             } else {
                 cout << "No such file, try again." << endl;
             }
@@ -168,6 +168,9 @@ int main(int argc, char** argv) {
     MPI_Bcast(data, sizex * sizey, MPI_INT, 0, MPI_COMM_WORLD);
     int proc_per_row = sqrt(num_procs);
     int proc_per_col = sqrt(num_procs);
+    // if (rank == 0) {
+    //     std::cout << proc_per_row << std::endl;
+    // }
     int total_rank = proc_per_col * proc_per_col;
     int row_per_proc = sizex / proc_per_row;
     int col_per_proc = sizey / proc_per_row;
@@ -323,10 +326,10 @@ int main(int argc, char** argv) {
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
         // // print output
-        if (outputfile != nullptr) {
-            std::ofstream out(outputfile);
-            output_to_file(out, final_output, sizex, sizey);
-        }
+        // if (outputfile != nullptr) {
+        //     std::ofstream out(outputfile);
+        //     output_to_file(out, final_output, sizex, sizey);
+        // }
     }
     
 
