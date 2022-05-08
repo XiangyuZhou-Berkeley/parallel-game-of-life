@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
         if (i < col_residual) {
             col_displacement[i] = i * (col_per_proc + 1);
         } else {
-            col_displacement[i] = col_residual * (row_per_proc + 1) + (i - col_residual) * row_per_proc;
+            col_displacement[i] = col_residual * (col_per_proc + 1) + (i - col_residual) * col_per_proc;
         }
         // if (rank == 0) {
         //     std::cout << col_displacement[i] <<std::endl;
@@ -285,6 +285,13 @@ int main(int argc, char** argv) {
         gather(rank,data_temp,displacement,recvcounts);
     }
 
+    if (rank == 0){
+        auto end_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double> diff = end_time - start_time;
+        double seconds = diff.count();
+        std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
+    }
+
     //reput data into 2d grid like
     if(rank == 0){
         for (int i = 0; i < total_rank; i++) {
@@ -319,18 +326,7 @@ int main(int argc, char** argv) {
 
 
 
-    if (rank == 0){
-        auto end_time = std::chrono::steady_clock::now();
-        std::chrono::duration<double> diff = end_time - start_time;
-        double seconds = diff.count();
-        std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
-
-        // // print output
-        // if (outputfile != nullptr) {
-        //     std::ofstream out(outputfile);
-        //     output_to_file(out, final_output, sizex, sizey);
-        // }
-    }
+    
     
 
     delete[] data;
