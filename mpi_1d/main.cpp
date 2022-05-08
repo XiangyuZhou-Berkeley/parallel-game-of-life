@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     int *data_temp;
     
     if (filename == nullptr) {
-        cout << "since no file found, we use random generate" << endl;
+        //cout << "since no file found, we use random generate" << endl;
         // random generate data as 0 or 1
         srand(seed);
         sizex = find_int_arg(argc, argv, "-x", 10);
@@ -90,13 +90,13 @@ int main(int argc, char** argv) {
             // int *temp = new int [sizex*sizey]{1,0,0,1,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1};
             // data = temp;
 
-            //print input
-            for (int i = 0; i < sizex; ++i) {
-                for (int j = 0; j < sizey; ++j){
-                    std::cout << data[i * sizey + j] << " "; 
-                }
-                std::cout << std::endl;
-            }
+            // //print input
+            // for (int i = 0; i < sizex; ++i) {
+            //     for (int j = 0; j < sizey; ++j){
+            //         std::cout << data[i * sizey + j] << " "; 
+            //     }
+            //     std::cout << std::endl;
+            // }
         }
     } else {
         // generate from file initialize
@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
 
     auto end_time = std::chrono::steady_clock::now();
     if (rank == 0){
-        std::cout << "Finished simulation" << std::endl;
+        cout << "Finished simulation" << std::endl;
     }
     // if (rank == 0) {
     //      for (int i = 0; i < sizex; ++i) {
@@ -230,7 +230,7 @@ int main(int argc, char** argv) {
     if (rank == 0){
         std::chrono::duration<double> diff = end_time - start_time;
         double seconds = diff.count();
-        std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
+        cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
         // // print output
         // for (int i = 0; i < sizex; ++i) {
