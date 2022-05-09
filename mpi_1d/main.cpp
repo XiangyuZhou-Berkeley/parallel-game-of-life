@@ -232,13 +232,13 @@ int main(int argc, char** argv) {
         double seconds = diff.count();
         cout << "Simulation Time = " << seconds << " seconds." << std::endl;
 
-        // // print output
-        // for (int i = 0; i < sizex; ++i) {
-        //     for (int j = 0; j < sizey; ++j){
-        //        std::cout << data_temp[i * sizey + j] << " "; 
-        //     }
-        //     std::cout << std::endl;
-        // }
+        // print output
+        for (int i = 0; i < sizex; ++i) {
+            for (int j = 0; j < sizey; ++j){
+               std::cout << data_temp[i * sizey + j] << " "; 
+            }
+            std::cout << std::endl;
+        }
     }
     
 

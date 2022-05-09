@@ -284,9 +284,8 @@ int main(int argc, char** argv) {
         }
         gather(rank,data_temp,displacement,recvcounts);
     }
-
+    auto end_time = std::chrono::steady_clock::now();
     if (rank == 0){
-        auto end_time = std::chrono::steady_clock::now();
         std::chrono::duration<double> diff = end_time - start_time;
         double seconds = diff.count();
         std::cout << "Simulation Time = " << seconds << " seconds." << std::endl;
@@ -321,6 +320,13 @@ int main(int argc, char** argv) {
                     temp_index++;
                 }
             }
+        }
+         // // print output
+        for (int i = 0; i < sizex; ++i) {
+            for (int j = 0; j < sizey; ++j){
+               std::cout << final_output[i * sizey + j] << " "; 
+            }
+            std::cout << std::endl;
         }
     }
 

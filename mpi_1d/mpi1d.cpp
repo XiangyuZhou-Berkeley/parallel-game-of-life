@@ -1,6 +1,7 @@
 #include <mpi.h>
 #include <iostream>
 #include <vector>
+#include <chrono>
 using namespace std;
 
 
@@ -9,7 +10,7 @@ int local_sizey = 0;
 int final_sizex = 0;
 int update_frequency = 1;
 int total_rank = 0;
-
+double communication_time = 0;
 //only save[0,local_sizex)
 vector<vector<int>> board;
 
@@ -194,6 +195,8 @@ void update(int rank, int step){
         }
     }
     
+    auto start_time = std::chrono::steady_clock::now();
+
     //send recv and put into grid
     if (rank > 0) {
         MPI_Isend(s_upper_ghost, num_send_upper_ghost, MPI_INT, rank-1, rank, MPI_COMM_WORLD, &requests[0]);
@@ -265,7 +268,15 @@ void update(int rank, int step){
     //     }
     //     std::cout << std::endl;
     // }
-    
+    if(rank == 0){
+        auto end_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double> diff = end_time - start_time;
+        double seconds = diff.count();
+        communication_time += seconds;
+        if (step == 128 - update_frequency) {
+            std::cout << "Communication Time = " << communication_time << " seconds." << std::endl;
+        }
+    }
     calculate_all(rank, step, upper_ghost, lower_ghost);
 }
 
