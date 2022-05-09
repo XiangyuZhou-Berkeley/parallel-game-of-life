@@ -322,12 +322,12 @@ int main(int argc, char** argv) {
             }
         }
          // // print output
-        for (int i = 0; i < sizex; ++i) {
-            for (int j = 0; j < sizey; ++j){
-               std::cout << final_output[i * sizey + j] << " "; 
-            }
-            std::cout << std::endl;
-        }
+        // for (int i = 0; i < sizex; ++i) {
+        //     for (int j = 0; j < sizey; ++j){
+        //        std::cout << final_output[i * sizey + j] << " "; 
+        //     }
+        //     std::cout << std::endl;
+        // }
     }
 
 
