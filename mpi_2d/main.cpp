@@ -285,6 +285,7 @@ int main(int argc, char** argv) {
         gather(rank,data_temp,displacement,recvcounts);
     }
     auto end_time = std::chrono::steady_clock::now();
+    //output simulation time
     if (rank == 0){
         std::chrono::duration<double> diff = end_time - start_time;
         double seconds = diff.count();

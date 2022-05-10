@@ -268,8 +268,9 @@ void update(int rank, int step){
     //     }
     //     std::cout << std::endl;
     // }
+    auto end_time = std::chrono::steady_clock::now();
+    MPI_Barrier(MPI_COMM_WORLD);
     if(rank == 0){
-        auto end_time = std::chrono::steady_clock::now();
         std::chrono::duration<double> diff = end_time - start_time;
         double seconds = diff.count();
         communication_time += seconds;

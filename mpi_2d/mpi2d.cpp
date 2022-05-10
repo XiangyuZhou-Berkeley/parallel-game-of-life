@@ -668,17 +668,17 @@ void update(int rank, int step, int proc_per_row){
     MPI_Irecv(r_lower_right_ghost, num_send_corner_ghost, MPI_INT, real_rank[7], real_rank[7], MPI_COMM_WORLD, &recv_requests[7]);
     MPI_Waitall( 8, recv_requests, statuses);
     
-
+    auto end_time = std::chrono::steady_clock::now();
+     MPI_Barrier(MPI_COMM_WORLD);
     //communication time
-    // if(rank == 0){
-    //     auto end_time = std::chrono::steady_clock::now();
-    //     std::chrono::duration<double> diff = end_time - start_time;
-    //     double seconds = diff.count();
-    //     communication_time += seconds;
-    //     if (step == 128 - update_frequency) {
-    //         std::cout << "Communication Time = " << communication_time << " seconds." << std::endl;
-    //     }
-    // }
+    if(rank == 0){
+        std::chrono::duration<double> diff = end_time - start_time;
+        double seconds = diff.count();
+        communication_time += seconds;
+        if (step == 128 - update_frequency) {
+            std::cout << "Communication Time = " << communication_time << " seconds." << std::endl;
+        }
+    }
     
     
 
