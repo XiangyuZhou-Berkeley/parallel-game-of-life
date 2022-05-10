@@ -33,3 +33,31 @@ instead of updating status at every time step, we are going to update every 2,3 
 
 We will try to look up for the best k for both 1D decompostion and 2D decompostion.
 
+
+
+
+
+# How to run our program:
+
+ 1.Create a build directory in mpi_1d, mpi_2d, serial
+
+```
+CMAKE ..
+make
+
+```
+
+2. move according sh files from sh files directory to build directory.
+
+3. ```
+   sbatch -N 2 **.sh
+   ```
+
+
+
+
+
+# Map plot
+
+Run ipynb in our plot directory
+

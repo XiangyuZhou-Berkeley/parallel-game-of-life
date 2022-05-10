@@ -1,0 +1,81 @@
+size = 1000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 1 mpi1d
+Finished simulation
+Simulation Time = 44.0368 seconds.
+size = 2000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 2 mpi1d
+Finished simulation
+Simulation Time = 44.0335 seconds.
+size = 4000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 4 mpi1d
+Finished simulation
+Simulation Time = 44.1841 seconds.
+size = 8000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 8 mpi1d
+Finished simulation
+Simulation Time = 46.1947 seconds.
+size = 9000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 9 mpi1d
+Finished simulation
+Simulation Time = 44.0815 seconds.
+size = 16000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 16 mpi1d
+Finished simulation
+Simulation Time = 44.1649 seconds.
+size = 25000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 25 mpi1d
+Finished simulation
+Simulation Time = 44.6937 seconds.
+size = 32000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 32 mpi1d
+Finished simulation
+Simulation Time = 44.8589 seconds.
+size = 36000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 36 mpi1d
+Finished simulation
+Simulation Time = 46.1993 seconds.
+size = 40000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 40 mpi1d
+Finished simulation
+Simulation Time = 45.0516 seconds.
+size = 50000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 50 mpi1d
+Finished simulation
+Simulation Time = 46.5348 seconds.
+size = 60000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 60 mpi1d
+Finished simulation
+Simulation Time = 45.0149 seconds.
+size = 64000 * 1000, freq = 1, steps = 128, seed = 10, node = 1, rank = 64 mpi1d
+Finished simulation
+Simulation Time = 46.6315 seconds.
+size = 2000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 1 mpi1d
+Finished simulation
+Simulation Time = 44.1575 seconds.
+size = 4000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 2 mpi1d
+Finished simulation
+Simulation Time = 44.1661 seconds.
+size = 8000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 4 mpi1d
+Finished simulation
+Simulation Time = 44.4051 seconds.
+size = 16000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 8 mpi1d
+Finished simulation
+Simulation Time = 44.2641 seconds.
+size = 18000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 9 mpi1d
+Finished simulation
+Simulation Time = 44.281 seconds.
+size = 32000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 16 mpi1d
+Finished simulation
+Simulation Time = 46.4019 seconds.
+size = 36000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 18 mpi1d
+Finished simulation
+Simulation Time = 44.6414 seconds.
+size = 50000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 25 mpi1d
+Finished simulation
+Simulation Time = 44.8862 seconds.
+size = 64000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 32 mpi1d
+Finished simulation
+Simulation Time = 46.455 seconds.
+size = 72000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 36 mpi1d
+Finished simulation
+Simulation Time = 46.6206 seconds.
+size = 80000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 40 mpi1d
+Finished simulation
+Simulation Time = 46.6698 seconds.
+size = 100000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 50 mpi1d
+Finished simulation
+Simulation Time = 46.7195 seconds.
+size = 120000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 60 mpi1d
+Finished simulation
+Simulation Time = 47.0424 seconds.
+size = 128000 * 1000, freq = 1, steps = 128, seed = 10, node = 2, rank = 64 mpi1d
+Finished simulation
+Simulation Time = 46.6734 seconds.
